@@ -3,74 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Math 24 Advanced | V0.2</title>
+  <meta name="theme-color" content="#ffffff">
+  <title>Math 24 Advanced | V0.3.1</title>
   <style>
+    :root { color-scheme: light; }
     * { box-sizing: border-box; }
-    body {
-      margin: 0; min-height: 100vh; padding: 28px 16px;
-      font-family: system-ui, sans-serif; color: #eaf1ff;
-      background: radial-gradient(circle at top, #193657, #0e1727 65%);
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: #f6f6f6; color: #131313;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; touch-action: manipulation; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #888; outline-offset: 2px;
     }
-    main { max-width: 560px; margin: auto; text-align: center; }
-    h1 { color: #77e6f2; margin-bottom: 6px; }
-    .subtitle, .note { color: #b3c2d9; }
-    .tag { display: inline-block; margin: 18px 0 0; padding: 7px 13px;
-      background: #183a43; color: #a2f0d7; border-radius: 40px; font-size: 14px; }
-    .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-      margin: 24px 0; }
-    .tile { padding: 20px 2px; background: #233852; border: 2px solid #4a6587;
-      border-radius: 14px; font-size: 32px; font-weight: 750; }
-    input { width: 100%; padding: 15px 12px; border-radius: 12px; border: 2px solid #55749a;
-      background: #17283e; color: white; text-align: center; font-size: 21px; }
-    input:focus { outline: 2px solid #77e6f2; outline-offset: 2px; }
-    button { cursor: pointer; border: 1px solid #617b9b; border-radius: 10px;
-      padding: 12px 14px; font-size: 16px; color: white; background: #263f5c; }
-    button:hover { background: #3a5678; }
-    .operators, .actions { display: flex; flex-wrap: wrap; gap: 9px;
-      justify-content: center; margin: 18px 0; }
-    .primary { border-color: #0e91ae; background: #0e91ae; font-weight: 700; }
-    #message { min-height: 50px; margin: 20px auto; font-size: 17px; line-height: 1.5; }
-    .note { font-size: 14px; line-height: 1.6; }
+    .page { max-width: 650px; margin: 0 auto; padding: 26px 12px 38px; }
+    header { text-align: center; margin-bottom: 19px; }
+    header h1 { font-size: clamp(28px, 6.8vw, 39px); line-height: 1.12;
+      letter-spacing: -1.1px; margin: 4px 0 7px; font-weight: 800; }
+    header p { margin: 0; color: #666; font-size: 13px; }
+    .version { display: inline-block; border: 1px solid #d2d2d2;
+      border-radius: 100px; padding: 4px 11px; margin-top: 10px; color: #555;
+      background: #fff; font-size: 11px; letter-spacing: .2px; }
+    .game { background: #fff; border: 1px solid #dadada; border-radius: 22px;
+      padding: 22px; box-shadow: 0 10px 40px #00000008; }
+    .mode-row { display: flex; gap: 10px; align-items: center;
+      justify-content: space-between; font-size: 14px; }
+    select { min-width: 0; width: 62%; max-width: 235px; background: #fff;
+      color: #141414; border: 1px solid #a8a8a8; border-radius: 9px;
+      padding: 9px 10px; }
+    .target { text-align: center; font-size: 16px; font-weight: 750;
+      margin: 23px 0 15px; }
+    .numbers { display: grid; grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 9px; margin: 0 0 21px; }
+    .tile { border: 2px solid #171717; border-radius: 12px; background: #f4f4f4;
+      font-size: clamp(25px, 7vw, 39px); font-weight: 800; line-height: 1;
+      padding: 19px 3px; text-align: center; font-variant-numeric: tabular-nums; }
+    .answer-label { display: block; font-size: 13px; font-weight: 700;
+      margin-bottom: 8px; }
+    #answer { display: block; width: 100%; height: 56px; border: 2px solid #292929;
+      border-radius: 11px; padding: 11px; font-size: 20px; text-align: center;
+      color: #131313; background: #fff; }
+    #answer::placeholder { color: #888; }
+    .hint { color: #6a6a6a; font-size: 11px; line-height: 1.45;
+      text-align: center; margin: 8px 0 0; }
+    /* Keypads ALWAYS follow the puzzle and input: numbers left, operators right. */
+    .keypads { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+      gap: 9px; margin-top: 23px; align-items: stretch; }
+    .pad { min-width: 0; border: 1px solid #d4d4d4; border-radius: 14px;
+      padding: 10px; background: #fafafa; }
+    .pad h2 { text-align: center; font-size: 12px; margin: 2px 0 11px;
+      color: #5c5c5c; font-weight: 700; }
+    .key-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 6px; }
+    .key { min-width: 0; min-height: 48px; padding: 2px; border-radius: 8px;
+      background: #fff; color: #111; border: 1px solid #bdbdbd;
+      font-size: 19px; font-weight: 650; }
+    .key:active { background: #d8d8d8; transform: translateY(1px); }
+    .key:hover { background: #eee; }
+    .key.utility { background: #ededed; font-size: 15px; }
+    .key.equal { background: #161616; color: #fff; border-color: #161616; }
+    .key.equal:hover { background: #444; }
+    .key[disabled] { opacity: .3; cursor: not-allowed; }
+    .key-spacer { pointer-events: none; }
+    .actions { display: grid; grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 8px; margin-top: 20px; }
+    .action { border: 1px solid #343434; background: #fff;
+      color: #131313; border-radius: 10px; min-height: 47px; padding: 9px 6px;
+      font-size: 14px; font-weight: 700; }
+    .action:active { transform: translateY(1px); }
+    .action.primary { background: #111; color: #fff; }
+    .action:hover { background: #eee; }
+    .action.primary:hover { background: #333; }
+    #message { border: 1px solid #dedede; border-radius: 10px; background: #f7f7f7;
+      min-height: 50px; padding: 12px; margin: 16px 0 0; font-size: 13px;
+      line-height: 1.5; overflow-wrap: anywhere; text-align: center; }
+    #message[data-status="success"] { border-color: #222; background: #eee; font-weight: 700; }
+    #message[data-status="error"] { border-style: dashed; border-color: #777; }
+    .rules { color: #606060; font-size: 12px; line-height: 1.6;
+      margin: 16px auto 0; text-align: center; max-width: 570px; }
+    @media (min-width: 720px) {
+      .page { padding-top: 42px; }
+      .game { padding: 30px 32px; }
+      .keypads { gap: 16px; }
+      .pad { padding: 15px; }
+      .key { min-height: 53px; font-size: 22px; }
+      .target { font-size: 19px; }
+    }
+    @media (max-width: 390px) {
+      .page { padding: 18px 9px 28px; }
+      .game { padding: 14px 10px; border-radius: 15px; }
+      .keypads { gap: 7px; margin-top: 19px; }
+      .pad { padding: 6px; border-radius: 10px; }
+      .pad h2 { margin: 4px 0 9px; font-size: 11px; }
+      .key-grid { gap: 4px; }
+      .key { min-height: 45px; font-size: 17px; border-radius: 7px; }
+      .key.utility { font-size: 12px; }
+      .target { margin-top: 19px; }
+      .tile { padding: 17px 2px; border-radius: 9px; }
+      .actions { gap: 6px; }
+      .action { font-size: 12px; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Math 24 Advanced</h1>
-    <p class="subtitle">เกมคณิตศาสตร์ 24 สำหรับมัธยมปลาย</p>
-    <span class="tag">V0.2 · สุ่มโจทย์ที่มีคำตอบแน่นอน</span>
-    <h2>ใช้เลขทั้ง 4 ตัวให้ได้ 24</h2>
-    <div class="numbers" id="numbers"></div>
-    <input id="answer" aria-label="ช่องพิมพ์คำตอบ" placeholder="เช่น (1+2+3)*4"
-      autocomplete="off" spellcheck="false">
-    <div class="operators">
-      <button onclick="insert('+')">+</button>
-      <button onclick="insert('-')">−</button>
-      <button onclick="insert('*')">×</button>
-      <button onclick="insert('/')">÷</button>
-      <button onclick="insert('(')">(</button>
-      <button onclick="insert(')')">)</button>
-      <button onclick="clearAnswer()">ล้าง</button>
-    </div>
-    <div class="actions">
-      <button class="primary" onclick="checkAnswer()">ตรวจคำตอบ</button>
-      <button onclick="newQuestion()">สุ่มโจทย์</button>
-      <button onclick="showSolution()">เฉลย</button>
-    </div>
-    <p id="message" aria-live="polite"></p>
-    <p class="note">กติกา: ใช้ตัวเลขแต่ละตัวหนึ่งครั้ง ใช้ + − × ÷ และวงเล็บได้<br>
-      ต้องได้ 24 พอดี ไม่อนุญาตให้พิมพ์เลขเพิ่ม</p>
-    <p class="note">เวอร์ชันถัดไป: ยกกำลัง · แฟกทอเรียล · รากที่สอง</p>
+  <main class="page">
+    <header>
+      <h1>Math 24 Advanced</h1>
+      <p>เกมคณิตศาสตร์ 24 สำหรับมัธยมปลาย</p>
+      <span class="version">V0.3.1 · Black &amp; White</span>
+    </header>
+    <section class="game" aria-label="เกมคณิตศาสตร์ 24">
+      <div class="mode-row">
+        <label for="mode"><strong>โหมดเกม</strong></label>
+        <select id="mode">
+          <option value="basic">พื้นฐาน (+ − × ÷)</option>
+          <option value="advanced">ขั้นสูง (√ ! ^)</option>
+        </select>
+      </div>
+      <p class="target">ใช้ตัวเลขทั้ง 4 ตัวให้ได้ 24</p>
+      <div class="numbers" id="numbers" aria-label="ตัวเลขโจทย์"></div>
+      <label class="answer-label" for="answer">สูตรของคุณ</label>
+      <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false"
+        placeholder="เช่น (1+2+3)*4" inputmode="text">
+      <p class="hint">พิมพ์ด้วยคีย์บอร์ดได้ หรือแตะปุ่มด้านล่างเพื่อใส่สูตร</p>
+
+      <div class="keypads">
+        <section class="pad numbers-pad" aria-label="แป้นตัวเลข">
+          <h2>ตัวเลข 0–9</h2>
+          <div class="key-grid" id="number-keys">
+            <button type="button" class="key" data-insert="1">1</button>
+            <button type="button" class="key" data-insert="2">2</button>
+            <button type="button" class="key" data-insert="3">3</button>
+            <button type="button" class="key" data-insert="4">4</button>
+            <button type="button" class="key" data-insert="5">5</button>
+            <button type="button" class="key" data-insert="6">6</button>
+            <button type="button" class="key" data-insert="7">7</button>
+            <button type="button" class="key" data-insert="8">8</button>
+            <button type="button" class="key" data-insert="9">9</button>
+            <span class="key-spacer" aria-hidden="true"></span>
+            <button type="button" class="key" data-insert="0">0</button>
+            <span class="key-spacer" aria-hidden="true"></span>
+          </div>
+        </section>
+        <section class="pad ops-pad" aria-label="แป้นเครื่องหมาย">
+          <h2>เครื่องหมาย</h2>
+          <div class="key-grid" id="operator-keys">
+            <button type="button" class="key" data-insert="+">+</button>
+            <button type="button" class="key" data-insert="-">−</button>
+            <button type="button" class="key" data-insert="*">×</button>
+            <button type="button" class="key" data-insert="/">÷</button>
+            <button type="button" class="key special" data-insert="^" aria-label="ยกกำลัง">xʸ</button>
+            <button type="button" class="key special" data-insert="√(" aria-label="รากที่สอง">√</button>
+            <button type="button" class="key special" data-insert="!" aria-label="แฟกทอเรียล">!</button>
+            <button type="button" class="key" data-insert="(">(</button>
+            <button type="button" class="key" data-insert=")">)</button>
+            <button type="button" class="key utility" id="backspace" aria-label="ลบหนึ่งตัวอักษร">⌫</button>
+            <button type="button" class="key utility" id="clear">ล้าง</button>
+            <button type="button" class="key equal" id="equal" aria-label="ตรวจคำตอบ">=</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="action primary" id="check">ตรวจคำตอบ</button>
+        <button type="button" class="action" id="new">สุ่มโจทย์</button>
+        <button type="button" class="action" id="solution">เฉลย</button>
+      </div>
+      <p id="message" aria-live="polite">พร้อมเล่นแล้ว!</p>
+    </section>
+    <p class="rules" id="rules">ใช้เลขบนการ์ดทั้ง 4 ตัว ตัวละหนึ่งครั้ง และทำให้ได้ 24 พอดี</p>
   </main>
   <script>
+    'use strict';
     const numberBox = document.getElementById('numbers');
     const input = document.getElementById('answer');
     const message = document.getElementById('message');
+    const modeSelect = document.getElementById('mode');
+    const MAX = 1000000000n; // จำกัดค่าระหว่างทาง ป้องกันตัวเลขมหาศาล
     let current = null;
 
-    // เศษส่วนที่คำนวณได้แม่นยำ ไม่ต้องปัดเศษทศนิยม
+    // ใช้เศษส่วนแบบ BigInt เพื่อไม่ต้องปัดเศษในการตัดสินคำตอบ
+    function abs(n) { return n < 0n ? -n : n; }
     function gcd(a, b) {
-      a = a < 0n ? -a : a;
-      b = b < 0n ? -b : b;
+      a = abs(a); b = abs(b);
       while (b !== 0n) [a, b] = [b, a % b];
       return a;
     }
@@ -78,151 +193,310 @@
       if (d === 0n) throw Error('ห้ามหารด้วยศูนย์');
       if (d < 0n) { n = -n; d = -d; }
       const g = gcd(n, d);
-      return { n: n / g, d: d / g };
+      if (g !== 0n) { n /= g; d /= g; }
+      if (abs(n) > MAX || d > MAX) throw Error('ตัวเลขระหว่างคำนวณใหญ่เกินไป');
+      return { n, d };
     }
-    const add = (a, b) => fraction(a.n*b.d+b.n*a.d, a.d*b.d);
-    const subtract = (a, b) => fraction(a.n*b.d-b.n*a.d, a.d*b.d);
-    const multiply = (a, b) => fraction(a.n*b.n, a.d*b.d);
-    const divide = (a, b) => fraction(a.n*b.d, a.d*b.n);
-    const is24 = x => x.n === 24n * x.d;
+    const add = (a,b) => fraction(a.n*b.d+b.n*a.d, a.d*b.d);
+    const subtract = (a,b) => fraction(a.n*b.d-b.n*a.d, a.d*b.d);
+    const multiply = (a,b) => fraction(a.n*b.n, a.d*b.d);
+    const divide = (a,b) => fraction(a.n*b.d, a.d*b.n);
+    const is24 = x => x.n === 24n*x.d;
 
-    // Solver: เลือกเลขสองตัวมาคำนวณ แล้วค้นหาต่อจนเหลือค่าเดียว
-    function findSolution(numbers) {
-      const start = numbers.map(n => ({ value: fraction(BigInt(n)), text: String(n) }));
-      function solve(items) {
-        if (items.length === 1) return is24(items[0].value) ? items[0].text : null;
-        for (let i = 0; i < items.length; i++) {
-          for (let j = i + 1; j < items.length; j++) {
-            const a = items[i], b = items[j];
-            const rest = items.filter((_, k) => k !== i && k !== j);
-            const choices = [
-              { value: add(a.value,b.value), text: `(${a.text}+${b.text})` },
-              { value: subtract(a.value,b.value), text: `(${a.text}-${b.text})` },
-              { value: subtract(b.value,a.value), text: `(${b.text}-${a.text})` },
-              { value: multiply(a.value,b.value), text: `(${a.text}*${b.text})` }
-            ];
-            if (b.value.n !== 0n)
-              choices.push({ value: divide(a.value,b.value), text: `(${a.text}/${b.text})` });
-            if (a.value.n !== 0n)
-              choices.push({ value: divide(b.value,a.value), text: `(${b.text}/${a.text})` });
-            for (const choice of choices) {
-              const result = solve([...rest, choice]);
-              if (result !== null) return result;
-            }
-          }
-        }
-        return null;
-      }
-      return solve(start);
+    function factorial(a) {
+      if (a.d !== 1n || a.n < 0n || a.n > 6n)
+        throw Error('แฟกทอเรียล (!) ใช้ได้กับจำนวนเต็ม 0 ถึง 6');
+      let result = 1n;
+      for (let i = 2n; i <= a.n; i++) result *= i;
+      return fraction(result);
     }
-
+    function squareRoot(a) {
+      if (a.n < 0n) throw Error('√ ใช้กับจำนวนติดลบไม่ได้ในเกมนี้');
+      const rN = BigInt(Math.floor(Math.sqrt(Number(a.n))));
+      const rD = BigInt(Math.floor(Math.sqrt(Number(a.d))));
+      if (rN*rN !== a.n || rD*rD !== a.d)
+        throw Error('√ ต้องได้ผลลัพธ์เป็นจำนวนตรรกยะที่คำนวณได้ตรงตัว');
+      return fraction(rN, rD);
+    }
+    function power(a, b) {
+      if (b.d !== 1n || b.n < -4n || b.n > 4n)
+        throw Error('เลขชี้กำลังต้องเป็นจำนวนเต็มตั้งแต่ −4 ถึง 4');
+      if (a.n === 0n && b.n <= 0n) throw Error('ไม่อนุญาตให้ยกกำลังศูนย์หรือติดลบจากฐาน 0');
+      const exp = abs(b.n);
+      return b.n >= 0n
+        ? fraction(a.n**exp, a.d**exp)
+        : fraction(a.d**exp, a.n**exp);
+    }
     function sameNumbers(a, b) {
       return [...a].sort((x,y)=>x-y).join(',') ===
              [...b].sort((x,y)=>x-y).join(',');
     }
-    function newQuestion() {
-      let found = null;
-      // ตรวจโจทย์ก่อนนำไปแสดง และจำกัดจำนวนครั้งเพื่อไม่ให้หน้าเว็บค้าง
-      for (let tries = 0; tries < 200; tries++) {
-        const nums = Array.from({length: 4}, () => 1 + Math.floor(Math.random()*9));
-        if (current && sameNumbers(nums, current.nums)) continue;
-        const solution = findSolution(nums);
-        if (solution !== null) { found = {nums, solution}; break; }
-      }
-      // ชุดสำรองเหล่านี้มีคำตอบแน่นอน
-      if (!found) {
-        const nums = current && sameNumbers(current.nums, [1,2,3,4])
-          ? [4,4,4,4] : [1,2,3,4];
-        found = {nums, solution: findSolution(nums)};
-      }
-      current = found;
-      numberBox.replaceChildren();
-      for (const n of current.nums) {
-        const tile = document.createElement('div');
-        tile.className = 'tile';
-        tile.textContent = n;
-        numberBox.appendChild(tile);
-      }
-      clearAnswer();
-    }
 
-    function insert(symbol) {
-      const start = input.selectionStart;
-      const end = input.selectionEnd;
-      input.setRangeText(symbol, start, end, 'end');
-      input.focus();
-    }
-    function clearAnswer() {
-      input.value = '';
-      message.textContent = '';
-      input.focus();
-    }
-    function showSolution() {
-      message.style.color = '#a6dfff';
-      message.textContent = 'ตัวอย่างเฉลย: ' + current.solution
-        .replaceAll('*','×').replaceAll('/','÷');
-    }
-
-    // ตรวจสูตรด้วย parser ของเราเอง ปลอดภัยกว่า eval()
-    function calculateAnswer(raw) {
-      const source = raw.replace(/\s/g,'').replaceAll('×','*')
+    // แปลงสูตรของผู้เล่นเป็นคำตอบอย่างปลอดภัย ไม่ใช้ eval()
+    function calculateAnswer(raw, nums = current.nums, mode = modeSelect.value) {
+      const source = raw.replace(/\s/g, '').replaceAll('×','*')
         .replaceAll('÷','/').replaceAll('−','-');
-      const tokens = source.match(/\d+|[()+*/-]/g);
-      if (!tokens || tokens.join('') !== source) throw Error('มีอักขระที่ไม่รองรับ');
-      const used = tokens.filter(t => /^\d+$/.test(t)).map(Number);
-      if (used.length !== 4 || !sameNumbers(used, current.nums))
-        throw Error('ต้องใช้เลขที่กำหนดครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง');
+      const tokens = source.match(/\d+|[()+*/^!√-]/g);
+      if (!tokens || tokens.join('') !== source)
+        throw Error('มีสัญลักษณ์ที่ไม่รองรับ');
+      if (mode === 'basic' && /[√!^]/.test(source))
+        throw Error('เครื่องหมาย √ ! ^ ใช้ได้ในโหมดขั้นสูงเท่านั้น');
+      if (['√','!','^'].some(op => tokens.filter(t => t === op).length > 1))
+        throw Error('ใช้ √ ! และ ^ ได้อย่างละไม่เกินหนึ่งครั้งต่อสูตร');
+      const numberTokens = tokens.filter(t => /^\d+$/.test(t));
+      if (numberTokens.some(t => t.length !== 1))
+        throw Error('ห้ามนำตัวเลขมาต่อกัน ต้องใช้ทีละหนึ่งหลัก');
+      const used = numberTokens.map(Number);
+      if (used.length !== 4 || !sameNumbers(used, nums))
+        throw Error('ต้องใช้เลขบนการ์ดให้ครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง');
       let pos = 0;
-      function atom() {
-        const token = tokens[pos++];
-        if (token === '(') {
+      function primary() {
+        const t = tokens[pos++];
+        if (t === '(') {
           const value = expression();
           if (tokens[pos++] !== ')') throw Error('วงเล็บไม่ถูกต้อง');
           return value;
         }
-        if (token && /^\d+$/.test(token)) return fraction(BigInt(token));
+        if (t && /^\d+$/.test(t)) return fraction(BigInt(t));
         throw Error('รูปแบบสูตรไม่ถูกต้อง');
       }
+      function postfix() {
+        let value = primary();
+        while (tokens[pos] === '!') { pos++; value = factorial(value); }
+        return value;
+      }
+      function exponent() {
+        let value = postfix();
+        if (tokens[pos] === '^') {
+          pos++;
+          value = power(value, unary()); // ยกกำลังชิดขวา
+        }
+        return value;
+      }
+      function unary() {
+        if (tokens[pos] === '√') { pos++; return squareRoot(unary()); }
+        return exponent();
+      }
       function term() {
-        let result = atom();
+        let value = unary();
         while (tokens[pos] === '*' || tokens[pos] === '/') {
           const op = tokens[pos++];
-          const right = atom();
-          result = op === '*' ? multiply(result, right) : divide(result, right);
+          const right = unary();
+          value = op === '*' ? multiply(value, right) : divide(value, right);
         }
-        return result;
+        return value;
       }
       function expression() {
-        let result = term();
+        let value = term();
         while (tokens[pos] === '+' || tokens[pos] === '-') {
           const op = tokens[pos++];
           const right = term();
-          result = op === '+' ? add(result, right) : subtract(result, right);
+          value = op === '+' ? add(value, right) : subtract(value, right);
         }
-        return result;
+        return value;
       }
       const result = expression();
       if (pos !== tokens.length) throw Error('รูปแบบสูตรไม่ถูกต้อง');
       return result;
     }
-    function checkAnswer() {
-      try {
-        const result = calculateAnswer(input.value);
-        if (is24(result)) {
-          message.style.color = '#8cf0b1';
-          message.textContent = '🎉 ถูกต้อง! ได้ 24 พอดี';
-        } else {
-          message.style.color = '#ffbcae';
-          message.textContent = `ยังไม่ใช่ 24 ครับ (ได้ ${result.n}/${result.d}) ลองอีกที!`;
+
+    // Solver พื้นฐาน: เลือก 2 ก้อนมารวม แล้วค้นหาต่อจนได้ 24
+    // รับก้อนที่ผ่าน √, ! หรือ ^ มาแล้วได้ จึงใช้สร้างโจทย์ขั้นสูงได้ด้วย
+    function findSolutionFromNodes(start) {
+      const failed = new Set();
+      function solve(items) {
+        if (items.length === 1) return is24(items[0].value) ? items[0].text : null;
+        const signature = items.map(x => `${x.value.n}/${x.value.d}`).sort().join('|');
+        if (failed.has(signature)) return null;
+        for (let i = 0; i < items.length; i++) {
+          for (let j = i + 1; j < items.length; j++) {
+            const a = items[i], b = items[j];
+            const rest = items.filter((_, k) => k !== i && k !== j);
+            const choices = [
+              [add, a, b, '+'], [subtract, a, b, '-'], [subtract, b, a, '-'],
+              [multiply, a, b, '*'], [divide, a, b, '/'], [divide, b, a, '/']
+            ];
+            for (const [op, left, right, symbol] of choices) {
+              let value;
+              try { value = op(left.value, right.value); }
+              catch { continue; }
+              const node = {value, text:`(${left.text}${symbol}${right.text})`};
+              const solution = solve([...rest, node]);
+              if (solution !== null) return solution;
+            }
+          }
         }
-      } catch (error) {
-        message.style.color = '#ffbcae';
-        message.textContent = error.message;
+        failed.add(signature);
+        return null;
+      }
+      return solve(start);
+    }
+    function numberNodes(nums) {
+      return nums.map(n => ({ value:fraction(BigInt(n)), text:String(n) }));
+    }
+    function findBasicSolution(nums) {
+      return findSolutionFromNodes(numberNodes(nums));
+    }
+
+    // สร้างสูตรขั้นสูงจาก 1 เครื่องหมายพิเศษ + Solver พื้นฐาน
+    // คืนเฉพาะสูตรที่ตรวจซ้ำแล้วว่าได้ 24 และใช้เลขครบทุกตัว
+    function findAdvancedSolution(nums, special) {
+      const nodes = numberNodes(nums);
+      if (special === '!') {
+        for (let i = 0; i < 4; i++) {
+          if (nums[i] < 3 || nums[i] > 6) continue;
+          const changed = nodes.map((node, k) => k === i
+            ? {value:factorial(node.value), text:`(${node.text}!)`} : node);
+          const solution = findSolutionFromNodes(changed);
+          if (solution !== null) return solution;
+        }
+      }
+      if (special === '√') {
+        for (let i = 0; i < 4; i++) {
+          if (nums[i] !== 4 && nums[i] !== 9) continue;
+          const changed = nodes.map((node, k) => k === i
+            ? {value:squareRoot(node.value), text:`√(${node.text})`} : node);
+          const solution = findSolutionFromNodes(changed);
+          if (solution !== null) return solution;
+        }
+      }
+      if (special === '^') {
+        for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+          if (i === j || nums[i] < 2 || nums[j] < 2 || nums[j] > 4) continue;
+          let value;
+          try { value = power(nodes[i].value, nodes[j].value); }
+          catch { continue; }
+          const rest = nodes.filter((_, k) => k !== i && k !== j);
+          const solution = findSolutionFromNodes([
+            ...rest, {value, text:`(${nums[i]}^${nums[j]})`}
+          ]);
+          if (solution !== null) return solution;
+        }
+      }
+      return null;
+    }
+
+    const fallbacks = {
+      basic: {nums:[1,2,3,4], solution:'1*2*3*4'},
+      '!': {nums:[4,3,2,1], solution:'4!*(3-2)*1'},
+      '√': {nums:[9,2,4,1], solution:'√(9)*2*4*1'},
+      '^': {nums:[2,3,4,1], solution:'(2^3)*(4-1)'}
+    };
+    const specials = ['!', '√', '^'];
+    const randomDigit = () => Math.floor(Math.random()*10);
+    function shuffle(items) {
+      for (let i = items.length-1; i > 0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [items[i], items[j]] = [items[j], items[i]];
+      }
+      return items;
+    }
+    function makeCandidate(special) {
+      if (special === '!') return shuffle([3 + Math.floor(Math.random()*4),randomDigit(),randomDigit(),randomDigit()]);
+      if (special === '√') return shuffle([Math.random() < .5 ? 4 : 9,randomDigit(),randomDigit(),randomDigit()]);
+      if (special === '^') return shuffle([2+Math.floor(Math.random()*7),2+Math.floor(Math.random()*3),randomDigit(),randomDigit()]);
+      return Array.from({length:4},randomDigit);
+    }
+    function newQuestion() {
+      const mode = modeSelect.value;
+      const special = mode === 'advanced' ? specials[Math.floor(Math.random()*specials.length)] : 'basic';
+      let found = null;
+      for (let tries = 0; tries < 220; tries++) {
+        const nums = makeCandidate(special);
+        if (current && sameNumbers(nums,current.nums)) continue;
+        const solution = mode === 'advanced'
+          ? findAdvancedSolution(nums,special) : findBasicSolution(nums);
+        if (solution === null) continue;
+        try {
+          if (is24(calculateAnswer(solution,nums,mode))) {
+            found = {nums,solution,special}; break;
+          }
+        } catch { /* ป้องกันไม่ให้โจทย์ที่ไม่ผ่านกติกาหลุดไปแสดง */ }
+      }
+      if (!found) {
+        const fallback = fallbacks[special];
+        found = {...fallback,special};
+      }
+      current = found;
+      numberBox.replaceChildren();
+      for (const n of current.nums) {
+        const tile = document.createElement('div');
+        tile.className = 'tile'; tile.textContent = n;
+        numberBox.appendChild(tile);
+      }
+      clearAnswer();
+      if (mode === 'advanced') setMessage('โจทย์ขั้นสูง: มีเฉลยที่ใช้ ' + special + ' แน่นอน', 'hint');
+      else setMessage('โจทย์ใหม่พร้อมแล้ว ลองทำให้ได้ 24!', 'hint');
+    }
+
+    function setMessage(text, status = '') {
+      message.textContent = text;
+      message.dataset.status = status;
+    }
+    // Remember cursor position when users type, then switch to on-screen buttons.
+    // On mobile, buttons should NOT force the system keyboard to pop up.
+    let cursorStart = 0;
+    let cursorEnd = 0;
+    function rememberCursor() {
+      cursorStart = input.selectionStart ?? input.value.length;
+      cursorEnd = input.selectionEnd ?? cursorStart;
+    }
+    input.addEventListener('input', rememberCursor);
+    input.addEventListener('click', rememberCursor);
+    input.addEventListener('keyup', rememberCursor);
+    function insert(symbol) {
+      const start = document.activeElement === input ? input.selectionStart : cursorStart;
+      const end = document.activeElement === input ? input.selectionEnd : cursorEnd;
+      input.setRangeText(symbol, start, end, 'end');
+      cursorStart = start + symbol.length;
+      cursorEnd = cursorStart;
+    }
+    function backspace() {
+      const start = document.activeElement === input ? input.selectionStart : cursorStart;
+      const end = document.activeElement === input ? input.selectionEnd : cursorEnd;
+      if (start !== end) {
+        input.setRangeText('', start, end, 'end');
+        cursorStart = cursorEnd = start;
+      } else if (start > 0) {
+        input.setRangeText('', start - 1, start, 'end');
+        cursorStart = cursorEnd = start - 1;
       }
     }
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') checkAnswer();
+    function clearAnswer() {
+      input.value = '';
+      cursorStart = cursorEnd = 0;
+      setMessage('พร้อมเริ่มโจทย์ใหม่', 'hint');
+    }
+    function showSolution() {
+      setMessage('ตัวอย่างเฉลย: ' + current.solution.replaceAll('*','×').replaceAll('/','÷'), 'hint');
+    }
+    function checkAnswer() {
+      try {
+        const value = calculateAnswer(input.value);
+        if (is24(value)) setMessage('✓ ถูกต้อง! ได้ 24 พอดี 🎉', 'success');
+        else setMessage('ยังไม่ใช่ 24 (ได้ ' +
+          (value.d === 1n ? String(value.n) : `${value.n}/${value.d}`) + ') ลองอีกครั้ง!', 'error');
+      } catch (error) { setMessage(error.message, 'error'); }
+    }
+    document.querySelectorAll('[data-insert]').forEach(button => {
+      button.addEventListener('click', () => insert(button.dataset.insert));
     });
+    document.getElementById('backspace').addEventListener('click', backspace);
+    document.getElementById('clear').addEventListener('click', () => clearAnswer());
+    document.getElementById('check').addEventListener('click', checkAnswer);
+    document.getElementById('equal').addEventListener('click', checkAnswer);
+    document.getElementById('new').addEventListener('click', newQuestion);
+    document.getElementById('solution').addEventListener('click', showSolution);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
+    modeSelect.addEventListener('change', () => {
+      const advanced = modeSelect.value === 'advanced';
+      document.querySelectorAll('.special').forEach(button => button.disabled = !advanced);
+      document.getElementById('rules').textContent = advanced
+        ? 'ใช้เลขครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง · √ ต้องถอดได้พอดี · ! ใช้กับจำนวนเต็ม 0–6 · เลขชี้กำลัง −4 ถึง 4 · √ ! ^ ใช้ได้อย่างละไม่เกิน 1 ครั้ง'
+        : 'ใช้เลขบนการ์ดครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง (รวม 0 ถ้ามี) · ใช้ + − × ÷ และวงเล็บ · ต้องได้ 24 พอดี';
+      newQuestion();
+    });
+    document.querySelectorAll('.special').forEach(button => button.disabled = true);
     newQuestion();
   </script>
 </body>
