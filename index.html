@@ -155,9 +155,9 @@
           <button type="button" class="key" data-insert="7">7</button>
           <button type="button" class="key" data-insert="8">8</button>
           <button type="button" class="key" data-insert="9">9</button>
-          <span class="key-spacer" aria-hidden="true"></span>
+          <button type="button" class="key utility" id="negative-key" aria-label="ใส่จำนวนติดลบ">(−</button>
           <button type="button" class="key" data-insert="0">0</button>
-          <span class="key-spacer" aria-hidden="true"></span>
+          <button type="button" class="key utility" id="backspace" aria-label="ลบหนึ่งตัว">⌫</button>
         </div>
       </section>
       <section class="pad ops-pad" aria-label="แป้นเครื่องหมาย">
@@ -171,7 +171,7 @@
           <button type="button" class="key special" data-insert="!">!</button>
           <button type="button" class="key" data-insert="(">(</button>
           <button type="button" class="key" data-insert=")">)</button>
-          <button type="button" class="key utility" id="backspace" aria-label="ลบหนึ่งตัว">⌫</button>
+          <button type="button" class="key utility" id="clear-key" aria-label="ล้างสูตร">C</button>
           <button type="button" class="key utility" id="exit-exponent" aria-label="ออกจากเลขชี้กำลังหรือเลื่อนเคอร์เซอร์ไปขวา">→</button>
           <button type="button" class="key dark" id="equal" aria-label="ตรวจคำตอบ">=</button>
         </div>
@@ -184,7 +184,7 @@
     </div>
     <p id="message" aria-live="polite">พร้อมเล่นแล้ว!</p>
   </section>
-  <p class="rules" id="rules">ใช้เลขบนการ์ดครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง และทำให้ได้ 24 พอดี</p>
+  <p class="rules" id="rules">ใช้เลขบนการ์ดครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง · อาจมีเลขติดลบ · กดปุ่ม (− เพื่อใส่เลขติดลบ</p>
 </main>
 <script>
     'use strict';
@@ -249,17 +249,18 @@
     function calculateAnswer(raw, nums = current.nums, mode = modeSelect.value) {
       const source = raw.replace(/\s/g, '').replaceAll('×','*')
         .replaceAll('÷','/').replaceAll('−','-');
-      const tokens = source.match(/\d+|[()+*/^!√-]/g);
+      // จำนวนลบจากโจทย์ต้องเขียน (-3) เท่านั้น; '-' เดี่ยวคือเครื่องหมายลบ
+      const tokens = source.match(/\(-[1-9]\)|\d+|[()+*/^!√-]/g);
       if (!tokens || tokens.join('') !== source)
         throw Error('มีสัญลักษณ์ที่ไม่รองรับ');
       if (mode === 'basic' && /[√!^]/.test(source))
         throw Error('เครื่องหมาย √ ! ^ ใช้ได้ในโหมดขั้นสูงเท่านั้น');
       if (['√','!','^'].some(op => tokens.filter(t => t === op).length > 1))
         throw Error('ใช้ √ ! และ ^ ได้อย่างละไม่เกินหนึ่งครั้งต่อสูตร');
-      const numberTokens = tokens.filter(t => /^\d+$/.test(t));
-      if (numberTokens.some(t => t.length !== 1))
+      const numberTokens = tokens.filter(t => /^\d+$/.test(t) || /^\(-[1-9]\)$/.test(t));
+      if (numberTokens.some(t => /^\d+$/.test(t) && t.length !== 1))
         throw Error('ห้ามนำตัวเลขมาต่อกัน ต้องใช้ทีละหนึ่งหลัก');
-      const used = numberTokens.map(Number);
+      const used = numberTokens.map(t => t[0] === '(' ? -Number(t[2]) : Number(t));
       if (used.length !== 4 || !sameNumbers(used, nums))
         throw Error('ต้องใช้เลขบนการ์ดให้ครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง');
       let pos = 0;
@@ -270,7 +271,8 @@
           if (tokens[pos++] !== ')') throw Error('วงเล็บไม่ถูกต้อง');
           return value;
         }
-        if (t && /^\d+$/.test(t)) return fraction(BigInt(t));
+        if (t && /^\(-[1-9]\)$/.test(t)) return fraction(-BigInt(t[2]));
+        if (t && /^\d$/.test(t)) return fraction(BigInt(t));
         throw Error('รูปแบบสูตรไม่ถูกต้อง');
       }
       function postfix() {
@@ -345,7 +347,7 @@
       return solve(start);
     }
     function numberNodes(nums) {
-      return nums.map(n => ({ value:fraction(BigInt(n)), text:String(n) }));
+      return nums.map(n => ({ value:fraction(BigInt(n)), text:n < 0 ? `(${n})` : String(n) }));
     }
     function findBasicSolution(nums) {
       return findSolutionFromNodes(numberNodes(nums));
@@ -375,13 +377,13 @@
       }
       if (special === '^') {
         for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
-          if (i === j || nums[i] < 2 || nums[j] < 2 || nums[j] > 4) continue;
+          if (i === j || Math.abs(nums[i]) < 2 || nums[j] < 2 || nums[j] > 4) continue;
           let value;
           try { value = power(nodes[i].value, nodes[j].value); }
           catch { continue; }
           const rest = nodes.filter((_, k) => k !== i && k !== j);
           const solution = findSolutionFromNodes([
-            ...rest, {value, text:`(${nums[i]}^${nums[j]})`}
+            ...rest, {value, text:`(${nodes[i].text}^${nodes[j].text})`}
           ]);
           if (solution !== null) return solution;
         }
@@ -395,8 +397,15 @@
       '√': {nums:[9,2,4,1], solution:'√(9)*2*4*1'},
       '^': {nums:[2,3,4,1], solution:'(2^3)*(4-1)'}
     };
+    const negativeFallbacks = {
+      basic: {nums:[-3,-2,1,4], solution:'(-3)*(-2)*1*4'},
+      '!': {nums:[-1,4,3,2], solution:'4!*(-1)*(2-3)'},
+      '√': {nums:[-2,9,-4,1], solution:'√(9)*(-2)*(-4)*1'},
+      '^': {nums:[-2,3,-4,1], solution:'((-2)^3)*((-4)+1)'}
+    };
     const specials = ['!', '√', '^'];
     const randomDigit = () => Math.floor(Math.random()*10);
+    const randomNegative = () => -(1+Math.floor(Math.random()*9));
     function shuffle(items) {
       for (let i = items.length-1; i > 0; i--) {
         const j = Math.floor(Math.random()*(i+1));
@@ -404,18 +413,27 @@
       }
       return items;
     }
-    function makeCandidate(special) {
-      if (special === '!') return shuffle([3 + Math.floor(Math.random()*4),randomDigit(),randomDigit(),randomDigit()]);
-      if (special === '√') return shuffle([Math.random() < .5 ? 4 : 9,randomDigit(),randomDigit(),randomDigit()]);
-      if (special === '^') return shuffle([2+Math.floor(Math.random()*7),2+Math.floor(Math.random()*3),randomDigit(),randomDigit()]);
-      return Array.from({length:4},randomDigit);
+    function makeCandidate(special, requireNegative) {
+      const forced = special === '!' ? [3 + Math.floor(Math.random()*4)]
+        : special === '√' ? [Math.random() < .5 ? 4 : 9]
+        : special === '^' ? [2+Math.floor(Math.random()*7),2+Math.floor(Math.random()*3)]
+        : [];
+      const free = Array.from({length:4-forced.length}, randomDigit);
+      if (requireNegative) {
+        const slots = shuffle(Array.from({length:free.length},(_,i)=>i));
+        const amount = free.length > 1 && Math.random() < .25 ? 2 : 1;
+        for (let i = 0; i < amount; i++) free[slots[i]] = randomNegative();
+      }
+      return shuffle([...forced,...free]);
     }
     function newQuestion() {
       const mode = modeSelect.value;
       const special = mode === 'advanced' ? specials[Math.floor(Math.random()*specials.length)] : 'basic';
+      // โจทย์ผสม: ราว 45% ของโจทย์ตั้งใจให้มีจำนวนติดลบ
+      const wantNegative = Math.random() < .45;
       let found = null;
       for (let tries = 0; tries < 220; tries++) {
-        const nums = makeCandidate(special);
+        const nums = makeCandidate(special, wantNegative);
         if (current && sameNumbers(nums,current.nums)) continue;
         const solution = mode === 'advanced'
           ? findAdvancedSolution(nums,special) : findBasicSolution(nums);
@@ -427,8 +445,11 @@
         } catch { /* ป้องกันไม่ให้โจทย์ที่ไม่ผ่านกติกาหลุดไปแสดง */ }
       }
       if (!found) {
-        const fallback = fallbacks[special];
+        const fallback = wantNegative ? negativeFallbacks[special] : fallbacks[special];
         found = {...fallback,special};
+        // ป้องกันข้อผิดพลาดในชุดโจทย์สำรองที่ตั้งค่าไว้
+        if (!is24(calculateAnswer(found.solution, found.nums, mode)))
+          throw Error('โจทย์สำรองไม่ผ่านการตรวจสอบ');
       }
       current = found;
       numberBox.replaceChildren();
@@ -552,11 +573,24 @@
       input.setRangeText(text, start, end, 'end');
       setCursor(start + positionOffset);
     }
+    function afterNegativeDigit() {
+      const before = input.value.slice(0,cursor);
+      if (/\(-[1-9]$/.test(before) && input.value[cursor] === ')')
+        setCursor(cursor + 1); // ปิดวงเล็บอัตโนมัติหลังพิมพ์จำนวนลบ 1 หลัก
+    }
+    function insertNegative() {
+      replaceSelection('(-)',2); // เคอร์เซอร์อยู่ตรงกลาง พร้อมพิมพ์เลขติดลบ
+      setMessage('ใส่เลขติดลบ 1–9 แล้วระบบจะปิดวงเล็บให้อัตโนมัติ', 'hint');
+    }
     function insert(symbol) {
       if (symbol === ')' && currentPower() && cursor === currentPower().close) {
         exitPower(); return;
       }
+      if (symbol === '0' && input.value.slice(0,cursor).endsWith('(-') && input.value[cursor] === ')') {
+        setMessage('ศูนย์ไม่ใช่จำนวนลบ กรุณาใส่เลข 1–9', 'error'); return;
+      }
       replaceSelection(symbol);
+      if (/^[1-9]$/.test(symbol)) afterNegativeDigit();
     }
     function insertPower() {
       if (modeSelect.value !== 'advanced') return;
@@ -621,7 +655,9 @@
       button.addEventListener('click', () => { input.blur(); insert(button.dataset.insert); });
     });
     document.getElementById('power-key').addEventListener('click', () => { input.blur(); insertPower(); });
+    document.getElementById('negative-key').addEventListener('click', () => { input.blur(); insertNegative(); });
     document.getElementById('backspace').addEventListener('click', () => { input.blur(); backspace(); });
+    document.getElementById('clear-key').addEventListener('click', clearAnswer);
     document.getElementById('clear').addEventListener('click', clearAnswer);
     document.getElementById('exit-exponent').addEventListener('click', () => { input.blur(); exitPower(); });
     document.getElementById('equal').addEventListener('click', checkAnswer);
@@ -667,14 +703,16 @@
       }
       cursor = input.selectionStart;
       editing = true;
+      // กรอกเลขลงในช่อง (-) แล้วข้ามวงเล็บปิดให้โดยอัตโนมัติ
+      afterNegativeDigit();
       renderFormula();
     });
     modeSelect.addEventListener('change', () => {
       const advanced = modeSelect.value === 'advanced';
       document.querySelectorAll('.special').forEach(button => button.disabled = !advanced);
       document.getElementById('rules').textContent = advanced
-        ? 'ใช้เลขครบ 4 ตัว ตัวละหนึ่งครั้ง · √ ต้องถอดได้พอดี · ! สำหรับ 0–6 · เลขชี้กำลัง −4 ถึง 4 · เครื่องหมายพิเศษใช้ได้อย่างละ 1 ครั้ง'
-        : 'ใช้เลขบนการ์ดครบ 4 ตัว ตัวละหนึ่งครั้ง · ใช้ + − × ÷ และวงเล็บ · ต้องได้ 24 พอดี';
+        ? 'ใช้เลขครบ 4 ตัว ตัวละหนึ่งครั้ง · อาจมีเลขติดลบ · √ ห้ามมีค่าติดลบใต้รากและต้องถอดได้พอดี · ! สำหรับ 0–6 · ยกกำลัง −4 ถึง 4'
+        : 'ใช้เลขบนการ์ดครบ 4 ตัว ตัวละหนึ่งครั้ง · อาจมีเลขติดลบ · ใช้ + − × ÷ และวงเล็บ · ต้องได้ 24 พอดี';
       newQuestion();
     });
     document.querySelectorAll('.special').forEach(button => button.disabled = true);
