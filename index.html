@@ -160,6 +160,30 @@
       .formula-visual { font-size: 22px; }
     }
     @media (prefers-reduced-motion: reduce) { .math-caret { animation: none; } }
+
+    /* แถบเวลาและคะแนนขนาดกะทัดรัดสำหรับมือถือ */
+    .score-board { margin: 13px 0 4px; padding: 13px 13px 10px;
+      background: #f7f7f7; border: 1px solid #e8e8e8; border-radius: 13px; }
+    .score-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+    .score-item { min-width: 0; text-align: center; }
+    .score-item + .score-item { border-left: 1px solid #dedede; }
+    .score-label { display: block; font-size: 11px; color: #666; font-weight: 600; }
+    .score-value { display: block; font-size: 22px; font-weight: 800;
+      font-variant-numeric: tabular-nums; margin-top: 3px; line-height: 1.3; }
+    .score-meta { display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #e6e6e6; }
+    .score-detail { margin: 0; color: #626262; line-height: 1.45; font-size: 11px; }
+    .reset-score { flex: 0 0 auto; font-size: 11px; border: 1px solid #d8d8d8;
+      border-radius: 8px; background: #fff; padding: 7px 9px; color: #333;
+      font-weight: 650; }
+    .reset-score:hover { background: #eaeaea; }
+    .score-board[data-state="solved"] .score-value:first-child { color: #151515; }
+    @media (max-width: 400px) {
+      .score-board { padding: 11px 9px 9px; }
+      .score-value { font-size: 20px; }
+      .score-detail, .reset-score { font-size: 10px; }
+      .reset-score { padding: 7px 6px; }
+    }
   </style>
 </head>
 <body>
@@ -200,6 +224,20 @@
       </div>
     </div>
     <p class="difficulty-note" id="difficulty-note"></p>
+    <div class="score-board" id="score-board" aria-label="เวลาและคะแนนเกม">
+      <div class="score-grid">
+        <div class="score-item"><span class="score-label">เวลาโจทย์นี้</span>
+          <strong class="score-value" id="timer" role="timer">00:00</strong></div>
+        <div class="score-item"><span class="score-label">คะแนนสะสม</span>
+          <strong class="score-value" id="score">0</strong></div>
+        <div class="score-item"><span class="score-label">ทำสำเร็จ</span>
+          <strong class="score-value" id="solved-count">0</strong></div>
+      </div>
+      <div class="score-meta">
+        <p class="score-detail" id="score-detail">ข้าม 0 · ดูเฉลย 0 · สำเร็จ 0%</p>
+        <button class="reset-score" type="button" id="reset-round">เริ่มรอบใหม่</button>
+      </div>
+    </div>
     <p class="target">ใช้เลขทั้ง 4 ตัวให้ได้ 24</p>
     <div class="numbers" id="numbers" aria-label="ตัวเลขโจทย์"></div>
     <div class="answer-head">
@@ -312,6 +350,16 @@
       <li>ปุ่ม <strong>สุ่มโจทย์</strong> สร้างโจทย์ใหม่ และปุ่ม <strong>เฉลย</strong> แสดงคำตอบตัวอย่าง</li>
     </ul>
     <p class="rules-muted">โจทย์สุ่มจากคลังที่ Solver ตรวจคำตอบและแยกระดับไว้ล่วงหน้า โดยเกมจะตรวจเฉลยอีกครั้งก่อนแสดง</p>
+
+    <h3>7. เวลาและคะแนน</h3>
+    <ul>
+      <li>เวลาจะเริ่มนับทันทีเมื่อโจทย์ใหม่ปรากฏ และหยุดเมื่อทำถูกหรือกดดูเฉลย เวลายังเดินต่อแม้สลับแท็บหรือเปิดสมุดกติกา</li>
+      <li>ทำถูกครั้งแรกได้คะแนนตามระดับ: <strong>ง่าย 10 / ปานกลาง 20 / ยาก 30 คะแนน</strong> และโบนัสความเร็ว 10 คะแนนถ้าทำได้ภายใน 30 วินาที หรือ 5 คะแนนถ้าทำได้ภายใน 60 วินาที</li>
+      <li>กดตรวจซ้ำหลังทำถูกจะไม่เพิ่มคะแนนอีก และสูตรที่ไม่ถูกต้องยังสามารถลองใหม่ได้โดยไม่มีการหักคะแนน</li>
+      <li>กด <strong>เฉลย</strong> หรือ <strong>สุ่มโจทย์</strong> ก่อนทำถูก จะไม่ได้คะแนนสำหรับโจทย์นั้น และนับเป็นดูเฉลยหรือข้ามตามลำดับ การเปลี่ยนโหมด/ความยากระหว่างโจทย์นับเป็นการข้ามเช่นกัน</li>
+      <li>เปอร์เซ็นต์สำเร็จคำนวณจาก จำนวนข้อที่ทำถูก ÷ (ทำถูก + ข้าม + ดูเฉลย) × 100</li>
+      <li>คะแนนและสถิติบันทึกไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่มีบัญชีหรือระบบจัดอันดับออนไลน์ ปุ่ม <strong>เริ่มรอบใหม่</strong> จะล้างคะแนนและสถิติหลังยืนยัน</li>
+    </ul>
   </div>
 </dialog>
 <script>
@@ -545,7 +593,90 @@
       }
       return items;
     }
+    // V0.7: คะแนนและเวลาเป็นสถิติส่วนตัวในเครื่อง ไม่มีฐานข้อมูล/Leaderboard
+    const STAT_KEY = 'math24-advanced-stats-v07';
+    const scoreBoard = document.getElementById('score-board');
+    const timerEl = document.getElementById('timer');
+    const scoreEl = document.getElementById('score');
+    const solvedCountEl = document.getElementById('solved-count');
+    const scoreDetailEl = document.getElementById('score-detail');
+    const emptyStats = () => ({score:0, solved:0, skipped:0, revealed:0, bestMs:null});
+    function loadStats() {
+      try {
+        const v = JSON.parse(localStorage.getItem(STAT_KEY));
+        if (!v || typeof v !== 'object') return emptyStats();
+        const clean = n => Number.isSafeInteger(n) && n >= 0 ? n : 0;
+        return {score:clean(v.score), solved:clean(v.solved), skipped:clean(v.skipped),
+          revealed:clean(v.revealed), bestMs:v.bestMs === null ? null : clean(v.bestMs)};
+      } catch { return emptyStats(); }
+    }
+    let stats = loadStats();
+    let puzzleStatus = 'none'; // none | active | solved | revealed
+    let startedAt = 0;
+    let stoppedElapsedMs = 0;
+    function saveStats() {
+      try { localStorage.setItem(STAT_KEY, JSON.stringify(stats)); }
+      catch { /* browser อาจปิดพื้นที่จัดเก็บ: ยังเล่นต่อได้ตามปกติ */ }
+    }
+    function elapsedMs() {
+      return puzzleStatus === 'active' ? Math.max(0, Date.now()-startedAt) : stoppedElapsedMs;
+    }
+    function formatElapsed(ms) {
+      const total = Math.floor(ms/1000);
+      const hours = Math.floor(total/3600);
+      const mm = Math.floor((total%3600)/60);
+      const ss = total%60;
+      return hours ? `${hours}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`
+        : `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+    }
+    function renderScore() {
+      timerEl.textContent = formatElapsed(elapsedMs());
+      scoreEl.textContent = stats.score.toLocaleString('th-TH');
+      solvedCountEl.textContent = String(stats.solved);
+      const total = stats.solved+stats.skipped+stats.revealed;
+      const percentage = total ? Math.round(100*stats.solved/total) : 0;
+      const best = stats.bestMs === null ? '—' : formatElapsed(stats.bestMs);
+      scoreDetailEl.textContent = `ข้าม ${stats.skipped} · ดูเฉลย ${stats.revealed} · สำเร็จ ${percentage}% · เร็วสุด ${best}`;
+      scoreBoard.dataset.state = puzzleStatus;
+    }
+    function finishPuzzle(status) {
+      if (puzzleStatus !== 'active') return false;
+      stoppedElapsedMs = elapsedMs();
+      puzzleStatus = status;
+      if (status === 'skipped') stats.skipped++;
+      else if (status === 'revealed') stats.revealed++;
+      else if (status === 'solved') {
+        stats.solved++;
+        if (stats.bestMs === null || stoppedElapsedMs < stats.bestMs)
+          stats.bestMs = stoppedElapsedMs;
+      }
+      saveStats();
+      renderScore();
+      return true;
+    }
+    function awardPoints() {
+      const base = {easy:10,medium:20,hard:30}[current.difficulty] || 10;
+      const duration = elapsedMs();
+      const bonus = duration <= 30000 ? 10 : duration <= 60000 ? 5 : 0;
+      if (!finishPuzzle('solved')) return 0;
+      stats.score += base + bonus;
+      saveStats();
+      renderScore();
+      return base + bonus;
+    }
+    function resetRound() {
+      if (!window.confirm('ล้างคะแนนและสถิติทั้งหมด แล้วเริ่มรอบใหม่ใช่ไหม?')) return;
+      stats = emptyStats();
+      saveStats();
+      puzzleStatus = 'none'; // ไม่บันทึกโจทย์เก่าว่าข้าม เพราะเริ่มรอบใหม่
+      newQuestion();
+      setMessage('เริ่มรอบใหม่แล้ว คะแนนเริ่มจาก 0 ขอให้สนุก!', 'hint');
+    }
+    // การแสดงเวลาคำนวณจาก Date.now เสมอ แม้เบราว์เซอร์หน่วง interval ในแท็บพื้นหลัง
+    setInterval(() => { if (puzzleStatus === 'active') renderScore(); }, 250);
+    document.getElementById('reset-round').addEventListener('click', resetRound);
     function newQuestion() {
+      if (puzzleStatus === 'active') finishPuzzle('skipped');
       const mode = modeSelect.value;
       const difficulty = difficultySelect.value;
       const pool = puzzleBank[mode][difficulty];
@@ -564,6 +695,10 @@
       recentPuzzles.push(keyOf(chosen));
       if (recentPuzzles.length > 8) recentPuzzles.shift();
       current = {...chosen, nums:shuffle([...chosen.nums]), difficulty};
+      puzzleStatus = 'active';
+      startedAt = Date.now();
+      stoppedElapsedMs = 0;
+      renderScore();
       numberBox.replaceChildren();
       for (const n of current.nums) {
         const tile = document.createElement('div');
@@ -744,10 +879,11 @@
       cursor = 0;
       editing = false;
       renderFormula();
-      setMessage('พร้อมเริ่มโจทย์ใหม่', 'hint');
+      setMessage('ล้างสูตรแล้ว ลองพิมพ์ใหม่ได้เลย', 'hint');
     }
     function showSolution() {
-      setMessage('ตัวอย่างเฉลย: ', 'hint');
+      if (puzzleStatus === 'active') finishPuzzle('revealed');
+      setMessage(puzzleStatus === 'solved' ? 'ตัวอย่างเฉลย (ข้อนี้ได้คะแนนแล้ว): ' : 'ตัวอย่างเฉลย (ข้อนี้ไม่ได้คะแนน): ', 'hint');
       const expr = current.solution.replace(/\^(-?\d)/g, '^($1)');
       const out = document.createElement('span');
       out.className = 'solution-math';
@@ -757,8 +893,16 @@
     function checkAnswer() {
       try {
         const value = calculateAnswer(input.value);
-        if (is24(value)) setMessage('✓ ถูกต้อง! ได้ 24 พอดี 🎉', 'success');
-        else setMessage('ยังไม่ใช่ 24 (ได้ ' +
+        if (is24(value)) {
+          if (puzzleStatus === 'active') {
+            const gained = awardPoints();
+            setMessage(`✓ ถูกต้อง! ได้ 24 พอดี · +${gained} คะแนน · เวลา ${formatElapsed(stoppedElapsedMs)}`, 'success');
+          } else if (puzzleStatus === 'solved') {
+            setMessage('✓ ถูกต้อง! ข้อนี้รับคะแนนไปแล้ว กดสุ่มโจทย์เพื่อเล่นข้อต่อไป', 'success');
+          } else {
+            setMessage('✓ สูตรถูกต้อง แต่ข้อนี้ดูเฉลยไปแล้วจึงไม่เพิ่มคะแนน', 'hint');
+          }
+        } else setMessage('ยังไม่ใช่ 24 (ได้ ' +
           (value.d === 1n ? String(value.n) : `${value.n}/${value.d}`) + ') ลองอีกครั้ง!', 'error');
       } catch (error) { setMessage(error.message, 'error'); }
     }
@@ -842,6 +986,7 @@
       if (outside) rulesDialog.close();
     });
     document.querySelectorAll('.special').forEach(button => button.disabled = true);
+    renderScore();
     newQuestion();
   </script>
 </body>
