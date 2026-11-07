@@ -21,10 +21,13 @@
     header p { margin: 0; font-size: 13px; color: #717171; }
     .game { padding: 25px 25px 27px; border: 1px solid #e8e8e8;
       background: #fff; border-radius: 22px; box-shadow: 0 12px 36px #00000005; }
-    .mode-row { display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      font-size: 13px; font-weight: 600; }
-    select { max-width: 248px; width: 65%; border-radius: 10px; border: 1px solid #d3d3d3;
-      background: #fff; color: #181818; padding: 10px 12px; font-size: 13px; }
+    .settings-row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 11px; }
+    .setting { min-width: 0; display: grid; gap: 7px; font-size: 12px; font-weight: 700; }
+    .setting select { display: block; width: 100%; min-width: 0; border-radius: 10px;
+      border: 1px solid #d3d3d3; background: #fff; color: #181818;
+      padding: 10px 11px; font-size: 13px; font-weight: 600; }
+    .difficulty-note { margin: 10px 2px 0; font-size: 11px; line-height: 1.5;
+      color: #767676; min-height: 17px; }
     .target { margin: 23px 0 14px; text-align: center; font-weight: 750; font-size: 17px; }
     .numbers { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 9px; margin-bottom: 22px; }
     .tile { border: 1.5px solid #181818; border-radius: 13px; background: #fff;
@@ -179,13 +182,24 @@
     <p>เกมคณิตศาสตร์ 24 สำหรับมัธยมปลาย</p>
   </header>
   <section class="game" aria-label="เกมคณิตศาสตร์ 24">
-    <div class="mode-row">
-      <label for="mode">ระดับการเล่น</label>
-      <select id="mode">
-        <option value="basic">พื้นฐาน (+ − × ÷)</option>
-        <option value="advanced">ขั้นสูง (√ ! ยกกำลัง)</option>
-      </select>
+    <div class="settings-row">
+      <div class="setting">
+        <label for="mode">รูปแบบการเล่น</label>
+        <select id="mode">
+          <option value="basic">พื้นฐาน</option>
+          <option value="advanced">ขั้นสูง</option>
+        </select>
+      </div>
+      <div class="setting">
+        <label for="difficulty">ความยากของโจทย์</label>
+        <select id="difficulty">
+          <option value="easy">ง่าย</option>
+          <option value="medium">ปานกลาง</option>
+          <option value="hard">ยาก</option>
+        </select>
+      </div>
     </div>
+    <p class="difficulty-note" id="difficulty-note"></p>
     <p class="target">ใช้เลขทั้ง 4 ตัวให้ได้ 24</p>
     <div class="numbers" id="numbers" aria-label="ตัวเลขโจทย์"></div>
     <div class="answer-head">
@@ -260,7 +274,19 @@
     <h3>2. โหมดพื้นฐาน</h3>
     <p>ใช้เครื่องหมาย <strong>+ − × ÷</strong> และวงเล็บได้ตามต้องการ โดยห้ามหารด้วยศูนย์</p>
 
-    <h3>3. โหมดขั้นสูง</h3>
+    <h3>3. การเลือกระดับความยาก</h3>
+    <p>เลือกรูปแบบ <strong>พื้นฐาน/ขั้นสูง</strong> แยกจากระดับ <strong>ง่าย/ปานกลาง/ยาก</strong> ได้</p>
+    <ul>
+      <li><strong>พื้นฐาน — ง่าย:</strong> มีวิธีทำโดยไม่ต้องใช้การหาร</li>
+      <li><strong>พื้นฐาน — ปานกลาง:</strong> ต้องใช้การหารในวิธีที่ Solver ตรวจพบ แต่ยังสามารถคำนวณโดยมีผลระหว่างทางเป็นจำนวนเต็ม</li>
+      <li><strong>พื้นฐาน — ยาก:</strong> วิธีที่ Solver ตรวจพบต้องมีเศษส่วนระหว่างทาง</li>
+      <li><strong>ขั้นสูง — ง่าย:</strong> มีเฉลยที่ใช้เครื่องหมายขั้นสูง โดยไม่ต้องหาร</li>
+      <li><strong>ขั้นสูง — ปานกลาง:</strong> เฉลยขั้นสูงที่ค้นพบต้องใช้การหาร แต่ยังคำนวณระหว่างทางเป็นจำนวนเต็มได้</li>
+      <li><strong>ขั้นสูง — ยาก:</strong> Solver ไม่พบคำตอบแบบไม่ใช้การหาร ทั้งในรูปแบบพื้นฐานและวิธีขั้นสูงที่รองรับ</li>
+    </ul>
+    <p class="rules-muted">ระดับความยากวัดจากรูปแบบวิธีแก้ที่ Solver รองรับ ไม่ใช่การพิสูจน์ว่าผู้เล่นจะไม่พบทางออกอื่นที่ง่ายกว่า</p>
+
+    <h3>4. โหมดขั้นสูง</h3>
     <p>ใช้เครื่องหมายพื้นฐานร่วมกับ <strong>√, ! และยกกำลัง</strong> ได้ตามข้อจำกัดต่อไปนี้:</p>
     <ul>
       <li><strong>รากที่สอง √:</strong> จำนวนใต้รากต้องไม่ติดลบ และผลของการถอดรากต้องเป็นจำนวนตรรกยะที่ได้ตรงตัว เช่น √9 = 3 และ √(1÷4) = 1÷2 แต่ √(−9) ใช้ไม่ได้</li>
@@ -270,7 +296,7 @@
     </ul>
     <p class="rules-muted">โหมดขั้นสูงมีเฉลยอย่างน้อยหนึ่งวิธีที่ใช้เครื่องหมายพิเศษ แต่ผู้เล่นอาจพบวิธีอื่นที่ถูกต้องตามกติกาได้เช่นกัน</p>
 
-    <h3>4. จำนวนติดลบ</h3>
+    <h3>5. จำนวนติดลบ</h3>
     <ul>
       <li>โจทย์สุ่มอาจมีหรือไม่มีจำนวนติดลบก็ได้ และอาจมีเลข 0</li>
       <li>ถ้าการ์ดเป็น −3 ต้องใช้ <code>(−3)</code> ไม่สามารถเปลี่ยนเป็น +3 ได้เอง ในทางกลับกันการ์ด +3 ก็เปลี่ยนเป็น −3 ฟรี ๆ ไม่ได้</li>
@@ -278,14 +304,14 @@
       <li>ปุ่ม <strong>−</strong> ทางขวาใช้ลบระหว่างนิพจน์ เช่น <code>4−3</code></li>
     </ul>
 
-    <h3>5. วิธีใส่สูตร</h3>
+    <h3>6. วิธีใส่สูตร</h3>
     <ul>
       <li>แตะช่องสูตรเพื่อพิมพ์ด้วยคีย์บอร์ด หรือกดปุ่มตัวเลขทางซ้ายและเครื่องหมายทางขวา</li>
       <li>ปุ่ม <strong>xⁿ</strong> ใช้สร้างเลขชี้กำลังแบบตัวเล็กลอยสูง กด <strong>→</strong> หรือ <strong>)</strong> เพื่อกลับมาพิมพ์ตามปกติ</li>
       <li>ปุ่ม <strong>⌫</strong> ลบอักขระ ปุ่ม <strong>C</strong> ล้างสูตร และปุ่ม <strong>=</strong> ตรวจคำตอบ</li>
       <li>ปุ่ม <strong>สุ่มโจทย์</strong> สร้างโจทย์ใหม่ และปุ่ม <strong>เฉลย</strong> แสดงคำตอบตัวอย่าง</li>
     </ul>
-    <p class="rules-muted">ทุกโจทย์ถูกตรวจด้วยระบบค้นหาคำตอบก่อนแสดง โดยมีเฉลยที่ผ่านกติกาของโหมดนั้นอย่างน้อยหนึ่งวิธี</p>
+    <p class="rules-muted">โจทย์สุ่มจากคลังที่ Solver ตรวจคำตอบและแยกระดับไว้ล่วงหน้า โดยเกมจะตรวจเฉลยอีกครั้งก่อนแสดง</p>
   </div>
 </dialog>
 <script>
@@ -294,6 +320,8 @@
     const input = document.getElementById('answer');
     const message = document.getElementById('message');
     const modeSelect = document.getElementById('mode');
+    const difficultySelect = document.getElementById('difficulty');
+    const difficultyNote = document.getElementById('difficulty-note');
     const MAX = 1000000000n; // จำกัดค่าระหว่างทาง ป้องกันตัวเลขมหาศาล
     let current = null;
 
@@ -493,76 +521,59 @@
       return null;
     }
 
-    const fallbacks = {
-      basic: {nums:[1,2,3,4], solution:'1*2*3*4'},
-      '!': {nums:[4,3,2,1], solution:'4!*(3-2)*1'},
-      '√': {nums:[9,2,4,1], solution:'√(9)*2*4*1'},
-      '^': {nums:[2,3,4,1], solution:'(2^3)*(4-1)'}
+    // คลังโจทย์ผ่าน Solver และตรวจระดับความยากแล้วก่อนเผยแพร่
+    // การสุ่มหน้าเว็บจะเลือกจากคลังนี้ และเช็กผลเฉลยอีกครั้งด้วย calculateAnswer
+    const puzzleBank = {"basic":{"easy":[{"nums":[4,4,-8,9],"solution":"((4*9)-(4-(-8)))","special":"basic"},{"nums":[-4,3,9,5],"solution":"(3*((9-(-4))-5))","special":"basic"},{"nums":[5,4,4,-7],"solution":"(4*((4-5)-(-7)))","special":"basic"},{"nums":[6,0,1,4],"solution":"((6+0)*(1*4))","special":"basic"},{"nums":[8,6,7,4],"solution":"((8-7)*(6*4))","special":"basic"},{"nums":[3,-3,-6,8],"solution":"(8*((-6)-(3*(-3))))","special":"basic"},{"nums":[4,6,3,4],"solution":"((6-4)*(3*4))","special":"basic"},{"nums":[-2,3,6,0],"solution":"(((-2)-6)*(0-3))","special":"basic"},{"nums":[4,-6,-4,1],"solution":"(4+((-4)*((-6)+1)))","special":"basic"},{"nums":[7,8,-8,2],"solution":"((-8)*((7-8)-2))","special":"basic"},{"nums":[-4,-5,6,4],"solution":"(((-4)-(-5))*(6*4))","special":"basic"},{"nums":[5,8,1,-9],"solution":"((5-8)*(1+(-9)))","special":"basic"},{"nums":[8,-4,1,0],"solution":"((0-8)*((-4)+1))","special":"basic"},{"nums":[3,0,-6,-2],"solution":"((0-3)*((-6)+(-2)))","special":"basic"},{"nums":[9,-4,5,7],"solution":"((-4)+(7*(9-5)))","special":"basic"},{"nums":[2,6,2,3],"solution":"((6-2)*(2*3))","special":"basic"},{"nums":[-1,3,1,6],"solution":"((3-(-1))*(1*6))","special":"basic"},{"nums":[5,4,6,2],"solution":"(6+(2*(5+4)))","special":"basic"},{"nums":[-9,3,-1,5],"solution":"(((-9)*(-1))+(3*5))","special":"basic"},{"nums":[9,4,2,9],"solution":"((9+4)+(2+9))","special":"basic"},{"nums":[9,6,5,4],"solution":"((9+6)+(5+4))","special":"basic"},{"nums":[5,4,6,3],"solution":"(6*(3+(5-4)))","special":"basic"},{"nums":[2,3,1,7],"solution":"((2+1)+(3*7))","special":"basic"},{"nums":[7,6,4,5],"solution":"(4*(5+(7-6)))","special":"basic"},{"nums":[9,4,6,6],"solution":"((6*(9-4))-6)","special":"basic"},{"nums":[4,5,6,6],"solution":"((4*6)*(6-5))","special":"basic"},{"nums":[8,6,2,3],"solution":"((3*(8+2))-6)","special":"basic"},{"nums":[5,0,4,6],"solution":"((5*0)+(4*6))","special":"basic"}],"medium":[{"nums":[3,9,1,9],"solution":"((9/3)*(9-1))","special":"basic"},{"nums":[4,-8,-5,8],"solution":"(8*(((-8)/4)-(-5)))","special":"basic"},{"nums":[5,5,9,3],"solution":"(3*(9-(5/5)))","special":"basic"},{"nums":[-5,8,5,2],"solution":"(8*(2-((-5)/5)))","special":"basic"},{"nums":[5,5,8,8],"solution":"((5*5)-(8/8))","special":"basic"},{"nums":[3,3,5,5],"solution":"((5*5)-(3/3))","special":"basic"},{"nums":[-7,2,3,6],"solution":"((6/2)-((-7)*3))","special":"basic"},{"nums":[5,2,-5,-8],"solution":"((-8)*((5/(-5))-2))","special":"basic"},{"nums":[4,5,-8,8],"solution":"(8*(5+((-8)/4)))","special":"basic"},{"nums":[8,-9,6,4],"solution":"(6-((8*(-9))/4))","special":"basic"},{"nums":[8,9,9,4],"solution":"(8*(4-(9/9)))","special":"basic"},{"nums":[-5,-5,4,4],"solution":"(((-5)*(-5))-(4/4))","special":"basic"},{"nums":[1,9,3,8],"solution":"(8*((1*9)/3))","special":"basic"},{"nums":[4,7,5,5],"solution":"(4*(7-(5/5)))","special":"basic"},{"nums":[9,-2,-6,5],"solution":"(9+(5*((-6)/(-2))))","special":"basic"},{"nums":[5,9,4,-9],"solution":"(4*(5-(9/(-9))))","special":"basic"},{"nums":[2,0,6,8],"solution":"((6*8)/(2+0))","special":"basic"},{"nums":[4,7,6,9],"solution":"(6*((7+9)/4))","special":"basic"},{"nums":[8,9,-6,9],"solution":"((8*9)/((-6)+9))","special":"basic"},{"nums":[7,1,3,9],"solution":"((7+1)*(9/3))","special":"basic"},{"nums":[5,6,2,9],"solution":"(9+((5*6)/2))","special":"basic"},{"nums":[5,5,-5,5],"solution":"((5*5)+((-5)/5))","special":"basic"},{"nums":[5,5,8,2],"solution":"(8*(2+(5/5)))","special":"basic"},{"nums":[5,6,7,7],"solution":"(6*(5-(7/7)))","special":"basic"},{"nums":[6,6,-6,5],"solution":"((-6)*((6/6)-5))","special":"basic"},{"nums":[6,6,6,5],"solution":"(6*(5-(6/6)))","special":"basic"},{"nums":[8,4,-5,8],"solution":"(4*((8/8)-(-5)))","special":"basic"},{"nums":[0,6,-2,8],"solution":"((0-6)*(8/(-2)))","special":"basic"}],"hard":[{"nums":[1,5,-4,-6],"solution":"((-6)/(1+(5/(-4))))","special":"basic"},{"nums":[8,1,6,6],"solution":"(6/(1-(6/8)))","special":"basic"},{"nums":[8,-3,3,8],"solution":"(8/(3+(8/(-3))))","special":"basic"},{"nums":[-7,1,3,8],"solution":"(3/(1+((-7)/8)))","special":"basic"},{"nums":[4,1,6,3],"solution":"(6/(1-(3/4)))","special":"basic"},{"nums":[1,6,-4,3],"solution":"(6/(1+(3/(-4))))","special":"basic"},{"nums":[4,1,5,-6],"solution":"((-6)/(1-(5/4)))","special":"basic"},{"nums":[1,4,6,5],"solution":"(6/((5/4)-1))","special":"basic"},{"nums":[-6,8,6,-1],"solution":"(6/(((-6)/8)-(-1)))","special":"basic"},{"nums":[5,1,6,-4],"solution":"((-4)/((5/6)-1))","special":"basic"},{"nums":[4,4,7,7],"solution":"(7*(4-(4/7)))","special":"basic"},{"nums":[4,1,6,-5],"solution":"(4/(1+((-5)/6)))","special":"basic"},{"nums":[-1,6,5,-4],"solution":"((-4)/((-1)+(5/6)))","special":"basic"},{"nums":[1,5,-5,5],"solution":"((-5)*((1/5)-5))","special":"basic"},{"nums":[3,-8,3,8],"solution":"(8/(3+((-8)/3)))","special":"basic"},{"nums":[3,3,7,7],"solution":"(7*(3+(3/7)))","special":"basic"},{"nums":[4,7,4,-7],"solution":"((-7)*((4/7)-4))","special":"basic"},{"nums":[3,1,-6,4],"solution":"((-6)/((3/4)-1))","special":"basic"},{"nums":[3,7,-3,-7],"solution":"((-7)*((-3)-(3/7)))","special":"basic"},{"nums":[3,3,8,8],"solution":"(8/(3-(8/3)))","special":"basic"},{"nums":[5,1,5,5],"solution":"(5*(5-(1/5)))","special":"basic"}]},"advanced":{"easy":[{"nums":[4,4,-8,9],"solution":"(((4!)*4)+((-8)*9))","special":"!"},{"nums":[-4,3,9,5],"solution":"((9+5)-((-4)-(3!)))","special":"!"},{"nums":[5,4,4,-7],"solution":"((4*(5-(-7)))-(4!))","special":"!"},{"nums":[5,0,2,4],"solution":"((4!)+(2*(5*0)))","special":"!"},{"nums":[6,0,1,4],"solution":"((6*0)+(1*(4!)))","special":"!"},{"nums":[8,4,3,8],"solution":"(3*(((4!)-8)-8))","special":"!"},{"nums":[8,6,7,4],"solution":"((√(4)*(8+7))-6)","special":"√"},{"nums":[3,-3,-6,8],"solution":"(8*((-6)+((3!)-(-3))))","special":"!"},{"nums":[4,4,0,1],"solution":"(((4!)*1)+(4*0))","special":"!"},{"nums":[4,6,3,4],"solution":"((4!)*(4-(6-3)))","special":"!"},{"nums":[-2,3,6,0],"solution":"(((-2)+(3!))*(6+0))","special":"!"},{"nums":[4,-6,-4,1],"solution":"((4!)*(((-4)-(-6))-1))","special":"!"},{"nums":[1,3,5,-5],"solution":"(((3!)*5)-(1-(-5)))","special":"!"},{"nums":[-4,-5,6,4],"solution":"(6*((4!)-((-4)*(-5))))","special":"!"},{"nums":[3,0,-6,-2],"solution":"(((3!)+0)*((-2)-(-6)))","special":"!"},{"nums":[9,-4,5,7],"solution":"((5+7)-(√(9)*(-4)))","special":"√"},{"nums":[2,6,2,3],"solution":"((2*6)+(2*(3!)))","special":"!"},{"nums":[-1,3,1,6],"solution":"(6*(((-1)+(3!))-1))","special":"!"},{"nums":[5,4,6,2],"solution":"((4!)*(2+(5-6)))","special":"!"},{"nums":[5,3,5,1],"solution":"((5*(3!))-(5+1))","special":"!"},{"nums":[-9,3,-1,5],"solution":"((3!)*(((-9)*(-1))-5))","special":"!"},{"nums":[9,4,2,9],"solution":"((4!)+(2*(9-9)))","special":"!"},{"nums":[-2,3,4,-8],"solution":"((4*((-2)+(3!)))-(-8))","special":"!"},{"nums":[9,6,5,4],"solution":"(6*((√(9)+5)-4))","special":"√"},{"nums":[4,0,9,5],"solution":"((4!)+(5*(0*9)))","special":"!"},{"nums":[9,8,9,0],"solution":"((√(9)*8)+(9*0))","special":"√"},{"nums":[3,-7,3,1],"solution":"(((3!)-3)*(1-(-7)))","special":"!"},{"nums":[5,4,6,3],"solution":"((6*(5+3))-(4!))","special":"!"}],"medium":[{"nums":[5,8,1,-9],"solution":"(((5!)/8)-(1*(-9)))","special":"!"},{"nums":[2,-5,8,6],"solution":"(((6!)/(-5))/(2-8))","special":"!"},{"nums":[6,-9,-3,5],"solution":"(((6!)/5)/((-3)-(-9)))","special":"!"},{"nums":[0,8,2,3],"solution":"((0+8)*((3!)/2))","special":"!"},{"nums":[5,8,-4,6],"solution":"(((5!)/6)+(8+(-4)))","special":"!"},{"nums":[5,5,-6,7],"solution":"(((5!)/5)*((-6)+7))","special":"!"},{"nums":[1,6,-5,5],"solution":"(((6!)/5)/(1-(-5)))","special":"!"},{"nums":[3,6,1,8],"solution":"((6^3)/(1+8))","special":"^"},{"nums":[2,5,6,1],"solution":"((5!)/(1-(2-6)))","special":"!"},{"nums":[6,1,6,5],"solution":"(((6!)*1)/(6*5))","special":"!"},{"nums":[-9,3,2,5],"solution":"((5*((3!)/2))-(-9))","special":"!"},{"nums":[1,9,9,-7],"solution":"((1-(-7))*(9/√(9)))","special":"√"},{"nums":[5,8,5,6],"solution":"((8*6)-((5!)/5))","special":"!"},{"nums":[6,9,7,-2],"solution":"(√(9)-((6*7)/(-2)))","special":"√"},{"nums":[5,-1,7,1],"solution":"((5!)/(((-1)+7)-1))","special":"!"},{"nums":[3,-9,4,8],"solution":"((3!)-(((-9)*8)/4))","special":"!"},{"nums":[5,2,-3,1],"solution":"(((5!)*1)/(2-(-3)))","special":"!"},{"nums":[7,-2,0,5],"solution":"((0+(5!))/(7+(-2)))","special":"!"},{"nums":[7,5,2,1],"solution":"(((5!)*1)/(7-2))","special":"!"},{"nums":[9,-3,6,8],"solution":"((8-((6!)/9))/(-3))","special":"!"},{"nums":[9,7,5,7],"solution":"((5!)/(7-(9-7)))","special":"!"},{"nums":[5,5,9,1],"solution":"((5!)/(1-(5-9)))","special":"!"},{"nums":[7,7,5,5],"solution":"((7-7)+((5!)/5))","special":"!"},{"nums":[6,7,6,2],"solution":"(((6!)/6)/(7-2))","special":"!"},{"nums":[6,5,6,0],"solution":"(((6!)/5)/(6+0))","special":"!"},{"nums":[7,6,8,2],"solution":"(((6!)/2)/(7+8))","special":"!"},{"nums":[5,6,7,5],"solution":"(((5!)/5)*(7-6))","special":"!"},{"nums":[6,5,5,1],"solution":"(((6!)/5)/(5+1))","special":"!"}],"hard":[{"nums":[-6,0,5,5],"solution":"(((-6)*0)+((5!)/5))","special":"!"},{"nums":[5,5,0,2],"solution":"(((5!)/5)+(0*2))","special":"!"},{"nums":[7,7,5,1],"solution":"(7+(((5!)-1)/7))","special":"!"},{"nums":[1,5,-4,-6],"solution":"((-6)-((1*(5!))/(-4)))","special":"!"},{"nums":[0,2,3,5],"solution":"((5!)/(3+(0+2)))","special":"!"},{"nums":[5,5,9,3],"solution":"(9+((5!)/(5+3)))","special":"!"},{"nums":[9,3,6,0],"solution":"((6^3)/(9+0))","special":"^"},{"nums":[5,5,0,9],"solution":"(((5!)/5)+(0*9))","special":"!"},{"nums":[0,5,5,0],"solution":"((0+(5!))/(5+0))","special":"!"},{"nums":[-5,8,5,2],"solution":"((5!)/(2+((-5)+8)))","special":"!"},{"nums":[5,5,8,8],"solution":"(((5!)/5)+(8-8))","special":"!"},{"nums":[7,-2,5,8],"solution":"((7-(-2))+((5!)/8))","special":"!"},{"nums":[-7,2,3,6],"solution":"((6-((-7)*(3!)))/2)","special":"!"},{"nums":[5,2,-5,-8],"solution":"((5!)/((2+(-5))-(-8)))","special":"!"},{"nums":[9,7,9,-7],"solution":"(√(9)*(9+(7/(-7))))","special":"√"},{"nums":[-2,3,5,0],"solution":"((0-(5!))/((-2)-3))","special":"!"},{"nums":[5,5,2,5],"solution":"(((5!)*2)/(5+5))","special":"!"},{"nums":[5,0,-5,8],"solution":"((0*8)-((5!)/(-5)))","special":"!"},{"nums":[5,1,6,-4],"solution":"((((5!)*1)/6)-(-4))","special":"!"},{"nums":[5,-1,7,7],"solution":"(7+(((5!)+(-1))/7))","special":"!"},{"nums":[0,5,7,5],"solution":"((0*7)+((5!)/5))","special":"!"},{"nums":[5,5,-5,5],"solution":"(((-5)+((5!)+5))/5)","special":"!"},{"nums":[5,5,8,2],"solution":"((5!)/(2-(5-8)))","special":"!"},{"nums":[5,6,7,7],"solution":"((5!)/(6-(7/7)))","special":"!"},{"nums":[0,5,9,-5],"solution":"((0*9)-((5!)/(-5)))","special":"!"},{"nums":[5,5,1,-9],"solution":"((5!)/((1-5)-(-9)))","special":"!"},{"nums":[9,7,7,9],"solution":"(√(9)*(9-(7/7)))","special":"√"},{"nums":[1,8,9,9],"solution":"((1*8)*(9/√(9)))","special":"√"}]}};
+    const recentPuzzles = [];
+    const difficultyLabels = {easy:'ง่าย', medium:'ปานกลาง', hard:'ยาก'};
+    const difficultyExplanations = {
+      basic: {
+        easy:'มีวิธีทำได้โดยไม่ต้องหาร',
+        medium:'ต้องใช้การหาร แต่ทำผลระหว่างทางเป็นจำนวนเต็มได้',
+        hard:'มีขั้นตอนที่ต้องคิดด้วยเศษส่วน'
+      },
+      advanced: {
+        easy:'มีเฉลยใช้ √, ! หรือยกกำลัง โดยไม่ต้องหาร',
+        medium:'เฉลยขั้นสูงใช้การหาร แต่คำนวณเป็นจำนวนเต็มได้',
+        hard:'ไม่พบวิธีที่ไม่ใช้การหารในขอบเขตของ Solver'
+      }
     };
-    const negativeFallbacks = {
-      basic: {nums:[-3,-2,1,4], solution:'(-3)*(-2)*1*4'},
-      '!': {nums:[-1,4,3,2], solution:'4!*(-1)*(2-3)'},
-      '√': {nums:[-2,9,-4,1], solution:'√(9)*(-2)*(-4)*1'},
-      '^': {nums:[-2,3,-4,1], solution:'((-2)^3)*((-4)+1)'}
-    };
-    const specials = ['!', '√', '^'];
-    const randomDigit = () => Math.floor(Math.random()*10);
-    const randomNegative = () => -(1+Math.floor(Math.random()*9));
     function shuffle(items) {
-      for (let i = items.length-1; i > 0; i--) {
-        const j = Math.floor(Math.random()*(i+1));
+      for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
       }
       return items;
     }
-    function makeCandidate(special, requireNegative) {
-      const forced = special === '!' ? [3 + Math.floor(Math.random()*4)]
-        : special === '√' ? [Math.random() < .5 ? 4 : 9]
-        : special === '^' ? [2+Math.floor(Math.random()*7),2+Math.floor(Math.random()*3)]
-        : [];
-      const free = Array.from({length:4-forced.length}, randomDigit);
-      if (requireNegative) {
-        const slots = shuffle(Array.from({length:free.length},(_,i)=>i));
-        const amount = free.length > 1 && Math.random() < .25 ? 2 : 1;
-        for (let i = 0; i < amount; i++) free[slots[i]] = randomNegative();
-      }
-      return shuffle([...forced,...free]);
-    }
     function newQuestion() {
       const mode = modeSelect.value;
-      const special = mode === 'advanced' ? specials[Math.floor(Math.random()*specials.length)] : 'basic';
-      // โจทย์ผสม: ราว 45% ของโจทย์ตั้งใจให้มีจำนวนติดลบ
+      const difficulty = difficultySelect.value;
+      const pool = puzzleBank[mode][difficulty];
       const wantNegative = Math.random() < .45;
-      let found = null;
-      for (let tries = 0; tries < 220; tries++) {
-        const nums = makeCandidate(special, wantNegative);
-        if (current && sameNumbers(nums,current.nums)) continue;
-        const solution = mode === 'advanced'
-          ? findAdvancedSolution(nums,special) : findBasicSolution(nums);
-        if (solution === null) continue;
-        try {
-          if (is24(calculateAnswer(solution,nums,mode))) {
-            found = {nums,solution,special}; break;
-          }
-        } catch { /* ป้องกันไม่ให้โจทย์ที่ไม่ผ่านกติกาหลุดไปแสดง */ }
-      }
-      if (!found) {
-        const fallback = wantNegative ? negativeFallbacks[special] : fallbacks[special];
-        found = {...fallback,special};
-        // ป้องกันข้อผิดพลาดในชุดโจทย์สำรองที่ตั้งค่าไว้
-        if (!is24(calculateAnswer(found.solution, found.nums, mode)))
-          throw Error('โจทย์สำรองไม่ผ่านการตรวจสอบ');
-      }
-      current = found;
+      // แต่ละระดับมีทั้งโจทย์บวกและลบ: สุ่มตามสัดส่วนโดยประมาณ
+      const preferred = pool.filter(p => p.nums.some(n => n < 0) === wantNegative);
+      const choices = preferred.length ? preferred : pool;
+      const keyOf = p => `${mode}:${difficulty}:${[...p.nums].sort((a,b)=>a-b).join(',')}`;
+      const fresh = choices.filter(p => !recentPuzzles.includes(keyOf(p)));
+      const picks = fresh.length ? fresh : choices;
+      const chosen = picks[Math.floor(Math.random() * picks.length)];
+      if (!chosen) throw Error('ไม่มีโจทย์สำหรับระดับนี้');
+      // ยืนยันว่าคำตอบตรงกับการ์ดและกติกาปัจจุบันจริงก่อนนำมาแสดง
+      const value = calculateAnswer(chosen.solution, chosen.nums, mode);
+      if (!is24(value)) throw Error('ตรวจเฉลยโจทย์ไม่ผ่าน');
+      recentPuzzles.push(keyOf(chosen));
+      if (recentPuzzles.length > 8) recentPuzzles.shift();
+      current = {...chosen, nums:shuffle([...chosen.nums]), difficulty};
       numberBox.replaceChildren();
       for (const n of current.nums) {
         const tile = document.createElement('div');
-        tile.className = 'tile'; tile.textContent = n;
+        tile.className = 'tile';
+        tile.textContent = n < 0 ? `−${-n}` : String(n);
         numberBox.appendChild(tile);
       }
       clearAnswer();
-      if (mode === 'advanced') setMessage('โจทย์ขั้นสูง: มีเฉลยที่ใช้ ' + special + ' แน่นอน', 'hint');
-      else setMessage('โจทย์ใหม่พร้อมแล้ว ลองทำให้ได้ 24!', 'hint');
+      difficultyNote.textContent = difficultyExplanations[mode][difficulty];
+      setMessage(`โจทย์${difficultyLabels[difficulty]}พร้อมแล้ว ลองทำให้ได้ 24!`, 'hint');
     }
 
     function setMessage(text, status = '') {
@@ -814,6 +825,7 @@
       document.querySelectorAll('.special').forEach(button => button.disabled = !advanced);
       newQuestion();
     });
+    difficultySelect.addEventListener('change', newQuestion);
 
     // สมุดกติกาข้างชื่อเกม: เปิด-ปิดด้วยคลิก, Esc และแตะพื้นที่นอกหน้าต่าง
     const rulesDialog = document.getElementById('rules-dialog');
