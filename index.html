@@ -3,177 +3,190 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
-  <title>Math 24 Advanced | V0.3.1</title>
+  <meta name="theme-color" content="#fafafa">
+  <title>Math 24 Advanced</title>
   <style>
     :root { color-scheme: light; }
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; }
-    body { margin: 0; background: #f6f6f6; color: #131313;
+    body { margin: 0; background: #fafafa; color: #151515;
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
     button, input, select { font: inherit; }
     button { cursor: pointer; touch-action: manipulation; }
-    button:focus-visible, input:focus-visible, select:focus-visible {
-      outline: 3px solid #888; outline-offset: 2px;
-    }
-    .page { max-width: 650px; margin: 0 auto; padding: 26px 12px 38px; }
-    header { text-align: center; margin-bottom: 19px; }
-    header h1 { font-size: clamp(28px, 6.8vw, 39px); line-height: 1.12;
-      letter-spacing: -1.1px; margin: 4px 0 7px; font-weight: 800; }
-    header p { margin: 0; color: #666; font-size: 13px; }
-    .version { display: inline-block; border: 1px solid #d2d2d2;
-      border-radius: 100px; padding: 4px 11px; margin-top: 10px; color: #555;
-      background: #fff; font-size: 11px; letter-spacing: .2px; }
-    .game { background: #fff; border: 1px solid #dadada; border-radius: 22px;
-      padding: 22px; box-shadow: 0 10px 40px #00000008; }
-    .mode-row { display: flex; gap: 10px; align-items: center;
-      justify-content: space-between; font-size: 14px; }
-    select { min-width: 0; width: 62%; max-width: 235px; background: #fff;
-      color: #141414; border: 1px solid #a8a8a8; border-radius: 9px;
-      padding: 9px 10px; }
-    .target { text-align: center; font-size: 16px; font-weight: 750;
-      margin: 23px 0 15px; }
-    .numbers { display: grid; grid-template-columns: repeat(4, minmax(0,1fr));
-      gap: 9px; margin: 0 0 21px; }
-    .tile { border: 2px solid #171717; border-radius: 12px; background: #f4f4f4;
-      font-size: clamp(25px, 7vw, 39px); font-weight: 800; line-height: 1;
-      padding: 19px 3px; text-align: center; font-variant-numeric: tabular-nums; }
-    .answer-label { display: block; font-size: 13px; font-weight: 700;
-      margin-bottom: 8px; }
-    #answer { display: block; width: 100%; height: 56px; border: 2px solid #292929;
-      border-radius: 11px; padding: 11px; font-size: 20px; text-align: center;
-      color: #131313; background: #fff; }
-    #answer::placeholder { color: #888; }
-    .hint { color: #6a6a6a; font-size: 11px; line-height: 1.45;
-      text-align: center; margin: 8px 0 0; }
-    /* Keypads ALWAYS follow the puzzle and input: numbers left, operators right. */
+    button:focus-visible, select:focus-visible { outline: 2px solid #222; outline-offset: 3px; }
+    .page { max-width: 604px; padding: 30px 14px 42px; margin: auto; }
+    header { text-align: center; margin: 0 0 22px; }
+    header h1 { margin: 0 0 6px; font-size: clamp(29px, 6.6vw, 38px);
+      letter-spacing: -.06em; line-height: 1.2; font-weight: 800; }
+    header p { margin: 0; font-size: 13px; color: #717171; }
+    .game { padding: 25px 25px 27px; border: 1px solid #e8e8e8;
+      background: #fff; border-radius: 22px; box-shadow: 0 12px 36px #00000005; }
+    .mode-row { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      font-size: 13px; font-weight: 600; }
+    select { max-width: 248px; width: 65%; border-radius: 10px; border: 1px solid #d3d3d3;
+      background: #fff; color: #181818; padding: 10px 12px; font-size: 13px; }
+    .target { margin: 23px 0 14px; text-align: center; font-weight: 750; font-size: 17px; }
+    .numbers { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 9px; margin-bottom: 22px; }
+    .tile { border: 1.5px solid #181818; border-radius: 13px; background: #fff;
+      display: grid; place-items: center; min-height: 74px;
+      font-size: clamp(27px,7vw,39px); font-weight: 750; line-height: 1;
+      font-variant-numeric: tabular-nums; }
+    .answer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .answer-label { display: block; font-size: 13px; font-weight: 700; }
+    .clear-link { border: 0; background: transparent; padding: 2px 4px;
+      color: #787878; text-decoration: underline; text-underline-offset: 3px;
+      font-size: 12px; font-weight: 500; }
+    .clear-link:hover { color: #161616; }
+    .formula-field { position: relative; min-height: 68px; border: 1.5px solid #262626;
+      border-radius: 13px; background: #fff; cursor: text;
+      display: flex; align-items: center; padding: 8px 15px; overflow-x: auto; }
+    .formula-field:focus-within { box-shadow: 0 0 0 2px #e5e5e5; }
+    #answer { position: absolute; left: 0; top: 0; width: 1px; height: 1px;
+      opacity: 0; z-index: -1; pointer-events: none; }
+    .formula-visual { display: flex; align-items: baseline; justify-content: center;
+      white-space: nowrap; min-width: 100%; min-height: 37px;
+      font-size: 24px; font-weight: 600; line-height: 1.35;
+      font-variant-numeric: lining-nums tabular-nums; user-select: none; }
+    .formula-text { white-space: pre; }
+    .formula-text[data-pos] { cursor: text; }
+    .placeholder { color: #9c9c9c; font-weight: 400; font-size: 17px; }
+    .sup-group { display: inline-flex; align-items: baseline; vertical-align: super;
+      font-size: .64em; line-height: 1.0; min-height: 15px;
+      margin-left: 1px; margin-right: 1px; font-weight: 650;
+      position: relative; top: -.4em; }
+    .sup-group:empty::before { content: ' '; display: inline-block; width: 10px; }
+    .math-caret { display: inline-block; vertical-align: -2px; background: #151515;
+      flex: 0 0 auto; width: 2px; height: 26px; margin-inline: 1px;
+      animation: caret-blink 1s steps(1) infinite; }
+    .sup-group .math-caret { width: 14px; height: 2px; margin-inline: 1px;
+      vertical-align: 3px; align-self: center; }
+    @keyframes caret-blink { 50% { opacity: 0; } }
+    .hint { font-size: 11px; line-height: 1.55; color: #777; text-align: center; margin: 9px 4px 0; }
     .keypads { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-      gap: 9px; margin-top: 23px; align-items: stretch; }
-    .pad { min-width: 0; border: 1px solid #d4d4d4; border-radius: 14px;
-      padding: 10px; background: #fafafa; }
-    .pad h2 { text-align: center; font-size: 12px; margin: 2px 0 11px;
-      color: #5c5c5c; font-weight: 700; }
-    .key-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
-      gap: 6px; }
-    .key { min-width: 0; min-height: 48px; padding: 2px; border-radius: 8px;
-      background: #fff; color: #111; border: 1px solid #bdbdbd;
-      font-size: 19px; font-weight: 650; }
-    .key:active { background: #d8d8d8; transform: translateY(1px); }
-    .key:hover { background: #eee; }
-    .key.utility { background: #ededed; font-size: 15px; }
-    .key.equal { background: #161616; color: #fff; border-color: #161616; }
-    .key.equal:hover { background: #444; }
-    .key[disabled] { opacity: .3; cursor: not-allowed; }
+      gap: 13px; margin-top: 23px; }
+    .pad { min-width: 0; }
+    .ops-pad { border-left: 1px solid #e7e7e7; padding-left: 13px; }
+    .key-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+    .key { display: grid; place-items: center; min-width: 0; min-height: 51px;
+      padding: 4px 1px; border-radius: 10px; border: 1px solid #e0e0e0;
+      background: #f7f7f7; color: #191919; font-size: 21px; font-weight: 650;
+      transition: background .12s ease; }
+    .key:hover { background: #ececec; }
+    .key:active { background: #dcdcdc; transform: scale(.97); }
+    .key.utility { font-size: 14px; color: #555; background: #f0f0f0; }
+    .key.dark { background: #171717; color: #fff; border-color: #171717; }
+    .key.dark:hover { background: #424242; }
+    .key[disabled] { opacity: .25; cursor: not-allowed; }
     .key-spacer { pointer-events: none; }
+    .key sup { font-size: 12px; vertical-align: super; }
     .actions { display: grid; grid-template-columns: 1.2fr 1fr 1fr;
-      gap: 8px; margin-top: 20px; }
-    .action { border: 1px solid #343434; background: #fff;
-      color: #131313; border-radius: 10px; min-height: 47px; padding: 9px 6px;
-      font-size: 14px; font-weight: 700; }
-    .action:active { transform: translateY(1px); }
-    .action.primary { background: #111; color: #fff; }
-    .action:hover { background: #eee; }
-    .action.primary:hover { background: #333; }
-    #message { border: 1px solid #dedede; border-radius: 10px; background: #f7f7f7;
-      min-height: 50px; padding: 12px; margin: 16px 0 0; font-size: 13px;
-      line-height: 1.5; overflow-wrap: anywhere; text-align: center; }
-    #message[data-status="success"] { border-color: #222; background: #eee; font-weight: 700; }
-    #message[data-status="error"] { border-style: dashed; border-color: #777; }
-    .rules { color: #606060; font-size: 12px; line-height: 1.6;
-      margin: 16px auto 0; text-align: center; max-width: 570px; }
+      gap: 9px; margin-top: 19px; }
+    .action { border: 1px solid #dedede; border-radius: 11px; background: #fff;
+      color: #151515; min-height: 48px; font-size: 13px; font-weight: 700; padding: 8px 5px; }
+    .action:hover { background: #f3f3f3; }
+    .action:active { transform: scale(.98); }
+    .action.primary { background: #151515; color: #fff; border-color: #151515; }
+    .action.primary:hover { background: #3a3a3a; }
+    #message { min-height: 49px; margin: 18px 0 0; padding: 12px;
+      border: 1px solid #ebebeb; border-radius: 11px; background: #fafafa;
+      font-size: 13px; text-align: center; line-height: 1.55; overflow-wrap: anywhere; }
+    #message[data-status="success"] { border-color: #303030; background: #f1f1f1; font-weight: 700; }
+    #message[data-status="error"] { border-style: dashed; }
+    .solution-math { font-size: 17px; font-weight: 700; display: inline-block; padding-left: 3px; }
+    .rules { max-width: 600px; margin: 17px auto 0; text-align: center;
+      font-size: 12px; line-height: 1.7; color: #777; }
     @media (min-width: 720px) {
-      .page { padding-top: 42px; }
-      .game { padding: 30px 32px; }
-      .keypads { gap: 16px; }
-      .pad { padding: 15px; }
-      .key { min-height: 53px; font-size: 22px; }
-      .target { font-size: 19px; }
+      .page { padding-top: 46px; }
+      .game { padding: 32px 35px 29px; }
+      .key { min-height: 55px; }
     }
-    @media (max-width: 390px) {
-      .page { padding: 18px 9px 28px; }
-      .game { padding: 14px 10px; border-radius: 15px; }
-      .keypads { gap: 7px; margin-top: 19px; }
-      .pad { padding: 6px; border-radius: 10px; }
-      .pad h2 { margin: 4px 0 9px; font-size: 11px; }
-      .key-grid { gap: 4px; }
-      .key { min-height: 45px; font-size: 17px; border-radius: 7px; }
+    @media (max-width: 400px) {
+      .page { padding: 19px 9px 26px; }
+      .game { padding: 17px 13px 19px; border-radius: 16px; }
+      .target { font-size: 15px; margin-top: 21px; }
+      .tile { min-height: 66px; border-radius: 11px; }
+      .keypads { gap: 8px; margin-top: 20px; }
+      .ops-pad { padding-left: 8px; }
+      .key-grid { gap: 5px; }
+      .key { min-height: 46px; border-radius: 8px; font-size: 20px; }
       .key.utility { font-size: 12px; }
-      .target { margin-top: 19px; }
-      .tile { padding: 17px 2px; border-radius: 9px; }
-      .actions { gap: 6px; }
+      .actions { gap: 7px; }
       .action { font-size: 12px; }
+      .formula-visual { font-size: 22px; }
     }
+    @media (prefers-reduced-motion: reduce) { .math-caret { animation: none; } }
   </style>
 </head>
 <body>
-  <main class="page">
-    <header>
-      <h1>Math 24 Advanced</h1>
-      <p>เกมคณิตศาสตร์ 24 สำหรับมัธยมปลาย</p>
-      <span class="version">V0.3.1 · Black &amp; White</span>
-    </header>
-    <section class="game" aria-label="เกมคณิตศาสตร์ 24">
-      <div class="mode-row">
-        <label for="mode"><strong>โหมดเกม</strong></label>
-        <select id="mode">
-          <option value="basic">พื้นฐาน (+ − × ÷)</option>
-          <option value="advanced">ขั้นสูง (√ ! ^)</option>
-        </select>
-      </div>
-      <p class="target">ใช้ตัวเลขทั้ง 4 ตัวให้ได้ 24</p>
-      <div class="numbers" id="numbers" aria-label="ตัวเลขโจทย์"></div>
+<main class="page">
+  <header>
+    <h1>Math 24 Advanced</h1>
+    <p>เกมคณิตศาสตร์ 24 สำหรับมัธยมปลาย</p>
+  </header>
+  <section class="game" aria-label="เกมคณิตศาสตร์ 24">
+    <div class="mode-row">
+      <label for="mode">ระดับการเล่น</label>
+      <select id="mode">
+        <option value="basic">พื้นฐาน (+ − × ÷)</option>
+        <option value="advanced">ขั้นสูง (√ ! ยกกำลัง)</option>
+      </select>
+    </div>
+    <p class="target">ใช้เลขทั้ง 4 ตัวให้ได้ 24</p>
+    <div class="numbers" id="numbers" aria-label="ตัวเลขโจทย์"></div>
+    <div class="answer-head">
       <label class="answer-label" for="answer">สูตรของคุณ</label>
-      <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false"
-        placeholder="เช่น (1+2+3)*4" inputmode="text">
-      <p class="hint">พิมพ์ด้วยคีย์บอร์ดได้ หรือแตะปุ่มด้านล่างเพื่อใส่สูตร</p>
-
-      <div class="keypads">
-        <section class="pad numbers-pad" aria-label="แป้นตัวเลข">
-          <h2>ตัวเลข 0–9</h2>
-          <div class="key-grid" id="number-keys">
-            <button type="button" class="key" data-insert="1">1</button>
-            <button type="button" class="key" data-insert="2">2</button>
-            <button type="button" class="key" data-insert="3">3</button>
-            <button type="button" class="key" data-insert="4">4</button>
-            <button type="button" class="key" data-insert="5">5</button>
-            <button type="button" class="key" data-insert="6">6</button>
-            <button type="button" class="key" data-insert="7">7</button>
-            <button type="button" class="key" data-insert="8">8</button>
-            <button type="button" class="key" data-insert="9">9</button>
-            <span class="key-spacer" aria-hidden="true"></span>
-            <button type="button" class="key" data-insert="0">0</button>
-            <span class="key-spacer" aria-hidden="true"></span>
-          </div>
-        </section>
-        <section class="pad ops-pad" aria-label="แป้นเครื่องหมาย">
-          <h2>เครื่องหมาย</h2>
-          <div class="key-grid" id="operator-keys">
-            <button type="button" class="key" data-insert="+">+</button>
-            <button type="button" class="key" data-insert="-">−</button>
-            <button type="button" class="key" data-insert="*">×</button>
-            <button type="button" class="key" data-insert="/">÷</button>
-            <button type="button" class="key special" data-insert="^" aria-label="ยกกำลัง">xʸ</button>
-            <button type="button" class="key special" data-insert="√(" aria-label="รากที่สอง">√</button>
-            <button type="button" class="key special" data-insert="!" aria-label="แฟกทอเรียล">!</button>
-            <button type="button" class="key" data-insert="(">(</button>
-            <button type="button" class="key" data-insert=")">)</button>
-            <button type="button" class="key utility" id="backspace" aria-label="ลบหนึ่งตัวอักษร">⌫</button>
-            <button type="button" class="key utility" id="clear">ล้าง</button>
-            <button type="button" class="key equal" id="equal" aria-label="ตรวจคำตอบ">=</button>
-          </div>
-        </section>
-      </div>
-
-      <div class="actions">
-        <button type="button" class="action primary" id="check">ตรวจคำตอบ</button>
-        <button type="button" class="action" id="new">สุ่มโจทย์</button>
-        <button type="button" class="action" id="solution">เฉลย</button>
-      </div>
-      <p id="message" aria-live="polite">พร้อมเล่นแล้ว!</p>
-    </section>
-    <p class="rules" id="rules">ใช้เลขบนการ์ดทั้ง 4 ตัว ตัวละหนึ่งครั้ง และทำให้ได้ 24 พอดี</p>
-  </main>
-  <script>
+      <button type="button" class="clear-link" id="clear">ล้างสูตร</button>
+    </div>
+    <div class="formula-field" id="formula-field" aria-label="แตะเพื่อพิมพ์สูตร">
+      <input id="answer" type="text" aria-label="สูตรคณิตศาสตร์" autocomplete="off"
+        autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
+      <div class="formula-visual" id="formula-visual" aria-hidden="true"></div>
+    </div>
+    <p class="hint" id="entry-hint">พิมพ์ด้วยคีย์บอร์ด หรือกดปุ่มด้านล่างได้</p>
+    <div class="keypads">
+      <section class="pad" aria-label="แป้นตัวเลข">
+        <div class="key-grid">
+          <button type="button" class="key" data-insert="1">1</button>
+          <button type="button" class="key" data-insert="2">2</button>
+          <button type="button" class="key" data-insert="3">3</button>
+          <button type="button" class="key" data-insert="4">4</button>
+          <button type="button" class="key" data-insert="5">5</button>
+          <button type="button" class="key" data-insert="6">6</button>
+          <button type="button" class="key" data-insert="7">7</button>
+          <button type="button" class="key" data-insert="8">8</button>
+          <button type="button" class="key" data-insert="9">9</button>
+          <span class="key-spacer" aria-hidden="true"></span>
+          <button type="button" class="key" data-insert="0">0</button>
+          <span class="key-spacer" aria-hidden="true"></span>
+        </div>
+      </section>
+      <section class="pad ops-pad" aria-label="แป้นเครื่องหมาย">
+        <div class="key-grid">
+          <button type="button" class="key" data-insert="+">+</button>
+          <button type="button" class="key" data-insert="-">−</button>
+          <button type="button" class="key" data-insert="*">×</button>
+          <button type="button" class="key" data-insert="/">÷</button>
+          <button type="button" class="key special" id="power-key" aria-label="ยกกำลัง"><span>x<sup>n</sup></span></button>
+          <button type="button" class="key special" data-insert="√(" aria-label="รากที่สอง">√</button>
+          <button type="button" class="key special" data-insert="!">!</button>
+          <button type="button" class="key" data-insert="(">(</button>
+          <button type="button" class="key" data-insert=")">)</button>
+          <button type="button" class="key utility" id="backspace" aria-label="ลบหนึ่งตัว">⌫</button>
+          <button type="button" class="key utility" id="exit-exponent" aria-label="ออกจากเลขชี้กำลังหรือเลื่อนเคอร์เซอร์ไปขวา">→</button>
+          <button type="button" class="key dark" id="equal" aria-label="ตรวจคำตอบ">=</button>
+        </div>
+      </section>
+    </div>
+    <div class="actions">
+      <button type="button" class="action primary" id="check">ตรวจคำตอบ</button>
+      <button type="button" class="action" id="new">สุ่มโจทย์</button>
+      <button type="button" class="action" id="solution">เฉลย</button>
+    </div>
+    <p id="message" aria-live="polite">พร้อมเล่นแล้ว!</p>
+  </section>
+  <p class="rules" id="rules">ใช้เลขบนการ์ดครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง และทำให้ได้ 24 พอดี</p>
+</main>
+<script>
     'use strict';
     const numberBox = document.getElementById('numbers');
     const input = document.getElementById('answer');
@@ -433,42 +446,166 @@
       message.textContent = text;
       message.dataset.status = status;
     }
-    // Remember cursor position when users type, then switch to on-screen buttons.
-    // On mobile, buttons should NOT force the system keyboard to pop up.
-    let cursorStart = 0;
-    let cursorEnd = 0;
-    function rememberCursor() {
-      cursorStart = input.selectionStart ?? input.value.length;
-      cursorEnd = input.selectionEnd ?? cursorStart;
+
+    // แสดงสูตรแบบคณิตศาสตร์จริง โดยเก็บข้อความดิบไว้ตรวจคำตอบ
+    const field = document.getElementById('formula-field');
+    const visual = document.getElementById('formula-visual');
+    const entryHint = document.getElementById('entry-hint');
+    let cursor = 0;
+    let editing = false;
+
+    function closingParen(str, open) {
+      let depth = 0;
+      for (let k = open; k < str.length; k++) {
+        if (str[k] === '(') depth++;
+        if (str[k] === ')') {
+          depth--;
+          if (depth === 0) return k;
+        }
+      }
+      return -1;
     }
-    input.addEventListener('input', rememberCursor);
-    input.addEventListener('click', rememberCursor);
-    input.addEventListener('keyup', rememberCursor);
+    function powerGroups(str = input.value) {
+      const groups = [];
+      for (let i = 0; i < str.length - 1; i++) {
+        if (str[i] === '^' && str[i+1] === '(') {
+          const close = closingParen(str, i+1);
+          if (close >= 0) groups.push({start:i, inside:i+2, close, after:close+1});
+        }
+      }
+      return groups;
+    }
+    function currentPower() {
+      return powerGroups().filter(g => cursor >= g.inside && cursor <= g.close)
+        .sort((a,b)=>b.start-a.start)[0] || null;
+    }
+    function displayChar(ch) {
+      return ch === '*' ? '×' : ch === '/' ? '÷' : ch === '-' ? '−' : ch;
+    }
+    function addCaret(parent, exponent) {
+      if (!editing) return;
+      const caret = document.createElement('span');
+      caret.className = 'math-caret';
+      caret.setAttribute('aria-hidden', 'true');
+      parent.appendChild(caret);
+    }
+    function addMathText(parent, str, withCaret = false, startAt = 0) {
+      function draw(begin, end, target) {
+        let i = begin;
+        while (i < end) {
+          if (withCaret && cursor === i) addCaret(target);
+          if (str[i] === '^' && str[i+1] === '(') {
+            const close = closingParen(str, i+1);
+            if (close >= 0 && close < end) {
+              const sup = document.createElement('sup');
+              sup.className = 'sup-group';
+              draw(i+2, close, sup);
+              target.appendChild(sup);
+              i = close + 1;
+              continue;
+            }
+          }
+          const text = document.createElement('span');
+          text.className = 'formula-text';
+          text.textContent = displayChar(str[i]);
+          text.dataset.pos = String(i);
+          target.appendChild(text);
+          i++;
+        }
+        if (withCaret && cursor === end) addCaret(target);
+      }
+      draw(0, str.length, parent);
+    }
+    function renderFormula() {
+      visual.replaceChildren();
+      const raw = input.value;
+      if (!raw) {
+        if (editing) addCaret(visual);
+        const placeholder = document.createElement('span');
+        placeholder.className = 'placeholder';
+        placeholder.textContent = 'เช่น (1+2+3)×4';
+        visual.appendChild(placeholder);
+      } else addMathText(visual, raw, true);
+      const group = currentPower();
+      entryHint.textContent = group
+        ? 'กำลังพิมพ์เลขชี้กำลัง · กด → หรือ ) เพื่อกลับมาพิมพ์ตามปกติ'
+        : 'พิมพ์ด้วยคีย์บอร์ด หรือกดปุ่มด้านล่างได้';
+      const caret = visual.querySelector('.math-caret');
+      if (caret) caret.scrollIntoView({block:'nearest',inline:'nearest'});
+    }
+    function setCursor(pos, focus = false) {
+      cursor = Math.max(0, Math.min(pos, input.value.length));
+      input.setSelectionRange(cursor, cursor);
+      editing = true;
+      if (focus) input.focus({preventScroll:true});
+      renderFormula();
+    }
+    function syncCursor() {
+      if (document.activeElement !== input) return;
+      cursor = input.selectionStart ?? input.value.length;
+      editing = true;
+      renderFormula();
+    }
+    function replaceSelection(text, positionOffset = text.length) {
+      const start = document.activeElement === input ? input.selectionStart : cursor;
+      const end = document.activeElement === input ? input.selectionEnd : cursor;
+      input.setRangeText(text, start, end, 'end');
+      setCursor(start + positionOffset);
+    }
     function insert(symbol) {
-      const start = document.activeElement === input ? input.selectionStart : cursorStart;
-      const end = document.activeElement === input ? input.selectionEnd : cursorEnd;
-      input.setRangeText(symbol, start, end, 'end');
-      cursorStart = start + symbol.length;
-      cursorEnd = cursorStart;
+      if (symbol === ')' && currentPower() && cursor === currentPower().close) {
+        exitPower(); return;
+      }
+      replaceSelection(symbol);
+    }
+    function insertPower() {
+      if (modeSelect.value !== 'advanced') return;
+      const before = input.value.slice(0, cursor);
+      if (!/[\d)!]$/.test(before)) {
+        setMessage('ใส่เลขฐานก่อนกดยกกำลัง เช่น 2 แล้วกด xⁿ', 'error'); return;
+      }
+      replaceSelection('^()', 2);
+    }
+    function exitPower() {
+      const group = currentPower();
+      if (group) setCursor(group.after);
+      else moveCursor(1);
+    }
+    function validPositions() {
+      const allowed = Array.from({length:input.value.length+1},(_,i)=>i);
+      const disallowed = new Set(powerGroups().map(g=>g.start+1));
+      return allowed.filter(p => !disallowed.has(p));
+    }
+    function moveCursor(direction) {
+      const positions = validPositions();
+      if (direction > 0) setCursor(positions.find(p=>p>cursor) ?? input.value.length);
+      else setCursor([...positions].reverse().find(p=>p<cursor) ?? 0);
     }
     function backspace() {
-      const start = document.activeElement === input ? input.selectionStart : cursorStart;
-      const end = document.activeElement === input ? input.selectionEnd : cursorEnd;
-      if (start !== end) {
-        input.setRangeText('', start, end, 'end');
-        cursorStart = cursorEnd = start;
-      } else if (start > 0) {
-        input.setRangeText('', start - 1, start, 'end');
-        cursorStart = cursorEnd = start - 1;
+      const s = document.activeElement === input ? input.selectionStart : cursor;
+      const e = document.activeElement === input ? input.selectionEnd : cursor;
+      if (s !== e) { input.setRangeText('',s,e,'end'); setCursor(s); return; }
+      const group = powerGroups().find(g => (s === g.inside && g.inside === g.close) || s === g.after);
+      if (group) {
+        input.setRangeText('',group.start,group.after,'end');
+        setCursor(group.start); return;
       }
+      if (s > 0) { input.setRangeText('',s-1,s,'end'); setCursor(s-1); }
     }
     function clearAnswer() {
       input.value = '';
-      cursorStart = cursorEnd = 0;
+      cursor = 0;
+      editing = false;
+      renderFormula();
       setMessage('พร้อมเริ่มโจทย์ใหม่', 'hint');
     }
     function showSolution() {
-      setMessage('ตัวอย่างเฉลย: ' + current.solution.replaceAll('*','×').replaceAll('/','÷'), 'hint');
+      setMessage('ตัวอย่างเฉลย: ', 'hint');
+      const expr = current.solution.replace(/\^(-?\d)/g, '^($1)');
+      const out = document.createElement('span');
+      out.className = 'solution-math';
+      addMathText(out, expr);
+      message.appendChild(out);
     }
     function checkAnswer() {
       try {
@@ -478,22 +615,66 @@
           (value.d === 1n ? String(value.n) : `${value.n}/${value.d}`) + ') ลองอีกครั้ง!', 'error');
       } catch (error) { setMessage(error.message, 'error'); }
     }
+
+    // ปุ่มในเว็บ: ไม่ต้องเปิดคีย์บอร์ดมือถือทุกครั้งที่แตะ
     document.querySelectorAll('[data-insert]').forEach(button => {
-      button.addEventListener('click', () => insert(button.dataset.insert));
+      button.addEventListener('click', () => { input.blur(); insert(button.dataset.insert); });
     });
-    document.getElementById('backspace').addEventListener('click', backspace);
-    document.getElementById('clear').addEventListener('click', () => clearAnswer());
-    document.getElementById('check').addEventListener('click', checkAnswer);
+    document.getElementById('power-key').addEventListener('click', () => { input.blur(); insertPower(); });
+    document.getElementById('backspace').addEventListener('click', () => { input.blur(); backspace(); });
+    document.getElementById('clear').addEventListener('click', clearAnswer);
+    document.getElementById('exit-exponent').addEventListener('click', () => { input.blur(); exitPower(); });
     document.getElementById('equal').addEventListener('click', checkAnswer);
+    document.getElementById('check').addEventListener('click', checkAnswer);
     document.getElementById('new').addEventListener('click', newQuestion);
     document.getElementById('solution').addEventListener('click', showSolution);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
+    field.addEventListener('click', e => {
+      if (e.target.dataset.pos !== undefined) {
+        const char = e.target;
+        const mid = char.getBoundingClientRect().left + char.getBoundingClientRect().width/2;
+        setCursor(Number(char.dataset.pos) + (e.clientX>mid?1:0), true);
+      } else setCursor(input.value.length, true);
+    });
+    input.addEventListener('focus', syncCursor);
+    input.addEventListener('click', syncCursor);
+    input.addEventListener('keyup', syncCursor);
+    document.addEventListener('selectionchange', syncCursor);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); checkAnswer(); }
+      else if (e.key === '^') { e.preventDefault(); insertPower(); }
+      else if (e.key === 'x' || e.key === 'X') { e.preventDefault(); insert('*'); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); moveCursor(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); moveCursor(-1); }
+      else if (e.key === 'Backspace') { e.preventDefault(); backspace(); }
+      else if (e.key === ')' && currentPower() && cursor === currentPower().close) {
+        e.preventDefault(); exitPower();
+      }
+      else if (e.key === ' ' && currentPower()) { e.preventDefault(); exitPower(); }
+    });
+    input.addEventListener('input', () => {
+      // รองรับสัญลักษณ์คูณที่พิมพ์จากมือถือ และ ^ แบบคีย์บอร์ดเสมือน
+      let pos = input.selectionStart;
+      const raw = input.value;
+      const converted = raw.replace(/[×xX]/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+      if (converted !== raw) {
+        input.value = converted; input.setSelectionRange(pos,pos);
+      }
+      const raw2 = input.value;
+      if (raw2[pos-1] === '^' && raw2[pos] !== '(') {
+        input.setRangeText('()',pos,pos,'end');
+        pos++;
+        input.setSelectionRange(pos,pos);
+      }
+      cursor = input.selectionStart;
+      editing = true;
+      renderFormula();
+    });
     modeSelect.addEventListener('change', () => {
       const advanced = modeSelect.value === 'advanced';
       document.querySelectorAll('.special').forEach(button => button.disabled = !advanced);
       document.getElementById('rules').textContent = advanced
-        ? 'ใช้เลขครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง · √ ต้องถอดได้พอดี · ! ใช้กับจำนวนเต็ม 0–6 · เลขชี้กำลัง −4 ถึง 4 · √ ! ^ ใช้ได้อย่างละไม่เกิน 1 ครั้ง'
-        : 'ใช้เลขบนการ์ดครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง (รวม 0 ถ้ามี) · ใช้ + − × ÷ และวงเล็บ · ต้องได้ 24 พอดี';
+        ? 'ใช้เลขครบ 4 ตัว ตัวละหนึ่งครั้ง · √ ต้องถอดได้พอดี · ! สำหรับ 0–6 · เลขชี้กำลัง −4 ถึง 4 · เครื่องหมายพิเศษใช้ได้อย่างละ 1 ครั้ง'
+        : 'ใช้เลขบนการ์ดครบ 4 ตัว ตัวละหนึ่งครั้ง · ใช้ + − × ÷ และวงเล็บ · ต้องได้ 24 พอดี';
       newQuestion();
     });
     document.querySelectorAll('.special').forEach(button => button.disabled = true);
