@@ -164,6 +164,39 @@
       .formula-visual { font-size: 22px; }
     }
     @media (prefers-reduced-motion: reduce) { .math-caret { animation: none; } }
+    /* โหมดแข่งยังคงหน้าจอแคบแบบมือถือเป็นหลัก */
+    .competition-setup { display: flex; align-items: end; flex-wrap: wrap;
+      gap: 9px; margin: 13px 0 0; }
+    .competition-setup .setting { flex: 1 1 135px; }
+    .competition-setup select { display: block; width: 100%; min-height: 42px;
+      padding: 8px 10px; border: 1px solid #d3d3d3; border-radius: 10px;
+      color: #191919; background: #fff; font-size: 13px; font-weight: 650; }
+    .competition-setup [hidden], .competition-progress[hidden] { display: none !important; }
+    .contest-start { min-height: 42px; background: #171717; color: white;
+      border: 1px solid #171717; border-radius: 10px; padding: 8px 13px;
+      font-size: 13px; font-weight: 750; }
+    .contest-start:hover { background: #3c3c3c; }
+    .contest-start.secondary { color: #171717; background: #fff; border-color: #cfcfcf; }
+    .contest-start.secondary:hover { background: #f0f0f0; }
+    .competition-progress { border: 1px solid #e6e6e6; border-radius: 10px;
+      background: #fcfcfc; padding: 10px 11px; margin-top: 12px;
+      text-align: center; font-size: 12px; line-height: 1.55; font-weight: 700; }
+    .competition-progress strong { font-variant-numeric: tabular-nums; }
+    .actions[data-competition="on"] { grid-template-columns: 1.2fr 1fr .9fr; }
+    .actions[data-competition="on"][data-hints="off"] { grid-template-columns: 1.2fr 1fr; }
+    .result-dialog .contest-result-content { text-align: center; padding: 20px; }
+    .result-big { font-size: 54px; letter-spacing: -.06em; font-weight: 850; }
+    .result-unit { margin: -2px 0 16px; color: #646464; font-size: 12px; }
+    .result-stats { display: grid; grid-template-columns: 1fr 1fr;
+      gap: 9px; margin: 12px 0 17px; }
+    .result-stats span { border: 1px solid #e5e5e5; background: #fafafa;
+      border-radius: 10px; padding: 13px 8px; font-size: 13px; }
+    .result-stats strong { display: block; font-size: 21px; }
+    .result-retry { width: 100%; margin-top: 10px; }
+    @media (max-width: 400px) {
+      .competition-setup .setting { flex-basis: 114px; }
+      .contest-start { width: 100%; }
+    }
 
     /* แถบเวลาและคะแนนขนาดกะทัดรัดสำหรับมือถือ */
     .score-board { margin: 13px 0 4px; padding: 13px 13px 10px;
@@ -228,9 +261,29 @@
       </div>
     </div>
     <p class="difficulty-note" id="difficulty-note"></p>
+    <div class="competition-setup" id="competition-setup">
+      <div class="setting">
+        <label for="play-style">รูปแบบเกม</label>
+        <select id="play-style">
+          <option value="practice">ฝึกซ้อม</option>
+          <option value="competition">แข่งขัน 10 ข้อ</option>
+        </select>
+      </div>
+      <div class="setting contest-duration" id="contest-duration-box" hidden>
+        <label for="contest-duration">เวลาทั้งหมด</label>
+        <select id="contest-duration">
+          <option value="5">5 นาที</option>
+          <option value="10" selected>10 นาที</option>
+          <option value="15">15 นาที</option>
+        </select>
+      </div>
+      <button type="button" id="start-competition" class="contest-start" hidden>เริ่มการแข่งขัน</button>
+      <button type="button" id="view-contest-result" class="contest-start secondary" hidden>ดูผลรอบล่าสุด</button>
+    </div>
+    <div id="competition-progress" class="competition-progress" aria-live="polite" hidden></div>
     <div class="score-board" id="score-board" aria-label="เวลาและคะแนนเกม">
       <div class="score-grid">
-        <div class="score-item"><span class="score-label">เวลาโจทย์นี้</span>
+        <div class="score-item"><span class="score-label" id="timer-label">เวลาโจทย์นี้</span>
           <strong class="score-value" id="timer" role="timer">00:00</strong></div>
         <div class="score-item"><span class="score-label">คะแนนสะสม</span>
           <strong class="score-value" id="score">0</strong></div>
@@ -353,7 +406,7 @@
       <li>ปุ่ม <strong>xⁿ</strong> ใช้สร้างเลขชี้กำลังแบบตัวเล็กลอยสูง กด <strong>→</strong> หรือ <strong>)</strong> เพื่อกลับมาพิมพ์ตามปกติ</li>
       <li>ปุ่ม <strong>⌫</strong> ลบอักขระ ปุ่ม <strong>C</strong> ล้างสูตร และปุ่ม <strong>=</strong> ตรวจคำตอบ</li>
       <li>ปุ่ม <strong>สุ่มโจทย์</strong> สร้างโจทย์ใหม่ และปุ่ม <strong>เฉลย</strong> แสดงคำตอบตัวอย่าง</li>
-      <li><strong>คำใบ้:</strong> ระดับง่ายขอได้ 2 ขั้น (แนวทางและตัวอย่างขั้นเริ่มคิด) ระดับปานกลางขอได้ 1 ขั้น ส่วนระดับยากไม่มีคำใบ้ โดยคำใบ้ยึดจากเฉลยที่ผ่านการตรวจแล้ว</li>
+      <li><strong>คำใบ้:</strong> ระดับง่ายขอได้ 2 ขั้น (หัก 5 คะแนนต่อครั้ง) ระดับปานกลางขอได้ 1 ขั้น (หัก 10 คะแนน) ระดับยากไม่มีคำใบ้ ทุกคำใบ้ใช้เฉลยที่ตรวจผ่านแล้ว</li>
     </ul>
     <p class="rules-muted">โจทย์สุ่มจากคลังที่ Solver ตรวจคำตอบและแยกระดับไว้ล่วงหน้า โดยเกมจะตรวจเฉลยอีกครั้งก่อนแสดง</p>
 
@@ -362,11 +415,33 @@
       <li>เวลาจะเริ่มนับทันทีเมื่อโจทย์ใหม่ปรากฏ และหยุดเมื่อทำถูกหรือกดดูเฉลย เวลายังเดินต่อแม้สลับแท็บหรือเปิดสมุดกติกา</li>
       <li>ทำถูกครั้งแรกได้คะแนนตามระดับ: <strong>ง่าย 10 / ปานกลาง 20 / ยาก 30 คะแนน</strong> และโบนัสความเร็ว 10 คะแนนถ้าทำได้ภายใน 30 วินาที หรือ 5 คะแนนถ้าทำได้ภายใน 60 วินาที</li>
       <li>กดตรวจซ้ำหลังทำถูกจะไม่เพิ่มคะแนนอีก และสูตรที่ไม่ถูกต้องยังสามารถลองใหม่ได้โดยไม่มีการหักคะแนน</li>
-      <li>คำใบ้ในระดับง่ายและปานกลางยังไม่หักคะแนนหรือโบนัสเวลาในรุ่นนี้ แต่เวลาโจทย์ยังเดินต่อ</li>
+      <li>คำใบ้จะหักจากคะแนนที่ได้ในโจทย์นั้น <strong>เมื่อทำถูก</strong> (ง่ายครั้งละ 5 คะแนน ปานกลางครั้งละ 10 คะแนน) รวมโบนัสความเร็วแล้วคะแนนต่อข้อไม่ต่ำกว่า 0 และจะไม่หักคะแนนสะสมเดิมหากข้ามหรือดูเฉลย</li>
       <li>กด <strong>เฉลย</strong> หรือ <strong>สุ่มโจทย์</strong> ก่อนทำถูก จะไม่ได้คะแนนสำหรับโจทย์นั้น และนับเป็นดูเฉลยหรือข้ามตามลำดับ การเปลี่ยนโหมด/ความยากระหว่างโจทย์นับเป็นการข้ามเช่นกัน</li>
       <li>เปอร์เซ็นต์สำเร็จคำนวณจาก จำนวนข้อที่ทำถูก ÷ (ทำถูก + ข้าม + ดูเฉลย) × 100</li>
-      <li>คะแนนและสถิติบันทึกไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่มีบัญชีหรือระบบจัดอันดับออนไลน์ ปุ่ม <strong>เริ่มรอบใหม่</strong> จะล้างคะแนนและสถิติหลังยืนยัน</li>
+      <li>คะแนนฝึกซ้อมและสถิติบันทึกไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่มีบัญชีหรือระบบจัดอันดับออนไลน์ ปุ่ม <strong>เริ่มรอบใหม่</strong> จะล้างคะแนนและสถิติหลังยืนยัน</li>
     </ul>
+    <h3>8. โหมดแข่งขัน</h3>
+    <ul>
+      <li>เลือก <strong>แข่งขัน 10 ข้อ</strong> แล้วกำหนดเวลา 5, 10 หรือ 15 นาที จากนั้นกดเริ่ม แข่งขันด้วยโหมดและความยากที่เลือกไว้</li>
+      <li>กด <strong>ข้ามข้อ</strong> เพื่อข้ามและไปข้อถัดไป; ทำถูกแล้วกด <strong>ข้อต่อไป</strong> คะแนนคิดตามกติกาเดียวกับฝึกซ้อม</li>
+      <li>โหมดแข่งขันปิดปุ่มเฉลยจนกว่าจะจบรอบ และจะจบเมื่อทำครบ 10 ข้อหรือหมดเวลา</li>
+      <li>เมื่อเริ่มแข่งขันจะล็อกโหมดและความยากไว้จนจบ; เวลายังเดินแม้สลับแท็บ และการรีเฟรชจะทำให้รอบแข่งขันที่กำลังเล่นอยู่เริ่มต้นใหม่ (ไม่เก็บรอบแข่งขันข้ามรีเฟรช)</li>
+      <li>ผลการแข่งขันเป็นคะแนนเฉพาะรอบบนอุปกรณ์นี้ <strong>ไม่ใช่ Ranking ออนไลน์</strong> และไม่รวมกับสถิติฝึกซ้อม</li>
+    </ul>
+  </div>
+</dialog>
+
+<dialog class="rules-dialog result-dialog" id="contest-result-dialog" aria-labelledby="contest-result-title">
+  <div class="rules-dialog-head">
+    <h2 id="contest-result-title">สรุปการแข่งขัน</h2>
+    <button type="button" class="dialog-close" id="close-contest-result" aria-label="ปิดผลการแข่งขัน">×</button>
+  </div>
+  <div class="contest-result-content">
+    <div class="result-big" id="contest-final-score">0</div>
+    <p class="result-unit">คะแนนรวม</p>
+    <div class="result-stats" id="contest-final-stats"></div>
+    <p class="rules-muted" id="contest-result-note"></p>
+    <button type="button" class="contest-start result-retry" id="replay-contest">แข่งอีกครั้ง</button>
   </div>
 </dialog>
 <script>
@@ -580,7 +655,7 @@
     // การสุ่มหน้าเว็บจะเลือกจากคลังนี้ และเช็กผลเฉลยอีกครั้งด้วย calculateAnswer
     const puzzleBank = {"basic":{"easy":[{"nums":[4,4,-8,9],"solution":"((4*9)-(4-(-8)))","special":"basic"},{"nums":[-4,3,9,5],"solution":"(3*((9-(-4))-5))","special":"basic"},{"nums":[5,4,4,-7],"solution":"(4*((4-5)-(-7)))","special":"basic"},{"nums":[6,0,1,4],"solution":"((6+0)*(1*4))","special":"basic"},{"nums":[8,6,7,4],"solution":"((8-7)*(6*4))","special":"basic"},{"nums":[3,-3,-6,8],"solution":"(8*((-6)-(3*(-3))))","special":"basic"},{"nums":[4,6,3,4],"solution":"((6-4)*(3*4))","special":"basic"},{"nums":[-2,3,6,0],"solution":"(((-2)-6)*(0-3))","special":"basic"},{"nums":[4,-6,-4,1],"solution":"(4+((-4)*((-6)+1)))","special":"basic"},{"nums":[7,8,-8,2],"solution":"((-8)*((7-8)-2))","special":"basic"},{"nums":[-4,-5,6,4],"solution":"(((-4)-(-5))*(6*4))","special":"basic"},{"nums":[5,8,1,-9],"solution":"((5-8)*(1+(-9)))","special":"basic"},{"nums":[8,-4,1,0],"solution":"((0-8)*((-4)+1))","special":"basic"},{"nums":[3,0,-6,-2],"solution":"((0-3)*((-6)+(-2)))","special":"basic"},{"nums":[9,-4,5,7],"solution":"((-4)+(7*(9-5)))","special":"basic"},{"nums":[2,6,2,3],"solution":"((6-2)*(2*3))","special":"basic"},{"nums":[-1,3,1,6],"solution":"((3-(-1))*(1*6))","special":"basic"},{"nums":[5,4,6,2],"solution":"(6+(2*(5+4)))","special":"basic"},{"nums":[-9,3,-1,5],"solution":"(((-9)*(-1))+(3*5))","special":"basic"},{"nums":[9,4,2,9],"solution":"((9+4)+(2+9))","special":"basic"},{"nums":[9,6,5,4],"solution":"((9+6)+(5+4))","special":"basic"},{"nums":[5,4,6,3],"solution":"(6*(3+(5-4)))","special":"basic"},{"nums":[2,3,1,7],"solution":"((2+1)+(3*7))","special":"basic"},{"nums":[7,6,4,5],"solution":"(4*(5+(7-6)))","special":"basic"},{"nums":[9,4,6,6],"solution":"((6*(9-4))-6)","special":"basic"},{"nums":[4,5,6,6],"solution":"((4*6)*(6-5))","special":"basic"},{"nums":[8,6,2,3],"solution":"((3*(8+2))-6)","special":"basic"},{"nums":[5,0,4,6],"solution":"((5*0)+(4*6))","special":"basic"}],"medium":[{"nums":[3,9,1,9],"solution":"((9/3)*(9-1))","special":"basic"},{"nums":[4,-8,-5,8],"solution":"(8*(((-8)/4)-(-5)))","special":"basic"},{"nums":[5,5,9,3],"solution":"(3*(9-(5/5)))","special":"basic"},{"nums":[-5,8,5,2],"solution":"(8*(2-((-5)/5)))","special":"basic"},{"nums":[5,5,8,8],"solution":"((5*5)-(8/8))","special":"basic"},{"nums":[3,3,5,5],"solution":"((5*5)-(3/3))","special":"basic"},{"nums":[-7,2,3,6],"solution":"((6/2)-((-7)*3))","special":"basic"},{"nums":[5,2,-5,-8],"solution":"((-8)*((5/(-5))-2))","special":"basic"},{"nums":[4,5,-8,8],"solution":"(8*(5+((-8)/4)))","special":"basic"},{"nums":[8,-9,6,4],"solution":"(6-((8*(-9))/4))","special":"basic"},{"nums":[8,9,9,4],"solution":"(8*(4-(9/9)))","special":"basic"},{"nums":[-5,-5,4,4],"solution":"(((-5)*(-5))-(4/4))","special":"basic"},{"nums":[1,9,3,8],"solution":"(8*((1*9)/3))","special":"basic"},{"nums":[4,7,5,5],"solution":"(4*(7-(5/5)))","special":"basic"},{"nums":[9,-2,-6,5],"solution":"(9+(5*((-6)/(-2))))","special":"basic"},{"nums":[5,9,4,-9],"solution":"(4*(5-(9/(-9))))","special":"basic"},{"nums":[2,0,6,8],"solution":"((6*8)/(2+0))","special":"basic"},{"nums":[4,7,6,9],"solution":"(6*((7+9)/4))","special":"basic"},{"nums":[8,9,-6,9],"solution":"((8*9)/((-6)+9))","special":"basic"},{"nums":[7,1,3,9],"solution":"((7+1)*(9/3))","special":"basic"},{"nums":[5,6,2,9],"solution":"(9+((5*6)/2))","special":"basic"},{"nums":[5,5,-5,5],"solution":"((5*5)+((-5)/5))","special":"basic"},{"nums":[5,5,8,2],"solution":"(8*(2+(5/5)))","special":"basic"},{"nums":[5,6,7,7],"solution":"(6*(5-(7/7)))","special":"basic"},{"nums":[6,6,-6,5],"solution":"((-6)*((6/6)-5))","special":"basic"},{"nums":[6,6,6,5],"solution":"(6*(5-(6/6)))","special":"basic"},{"nums":[8,4,-5,8],"solution":"(4*((8/8)-(-5)))","special":"basic"},{"nums":[0,6,-2,8],"solution":"((0-6)*(8/(-2)))","special":"basic"}],"hard":[{"nums":[1,5,-4,-6],"solution":"((-6)/(1+(5/(-4))))","special":"basic"},{"nums":[8,1,6,6],"solution":"(6/(1-(6/8)))","special":"basic"},{"nums":[8,-3,3,8],"solution":"(8/(3+(8/(-3))))","special":"basic"},{"nums":[-7,1,3,8],"solution":"(3/(1+((-7)/8)))","special":"basic"},{"nums":[4,1,6,3],"solution":"(6/(1-(3/4)))","special":"basic"},{"nums":[1,6,-4,3],"solution":"(6/(1+(3/(-4))))","special":"basic"},{"nums":[4,1,5,-6],"solution":"((-6)/(1-(5/4)))","special":"basic"},{"nums":[1,4,6,5],"solution":"(6/((5/4)-1))","special":"basic"},{"nums":[-6,8,6,-1],"solution":"(6/(((-6)/8)-(-1)))","special":"basic"},{"nums":[5,1,6,-4],"solution":"((-4)/((5/6)-1))","special":"basic"},{"nums":[4,4,7,7],"solution":"(7*(4-(4/7)))","special":"basic"},{"nums":[4,1,6,-5],"solution":"(4/(1+((-5)/6)))","special":"basic"},{"nums":[-1,6,5,-4],"solution":"((-4)/((-1)+(5/6)))","special":"basic"},{"nums":[1,5,-5,5],"solution":"((-5)*((1/5)-5))","special":"basic"},{"nums":[3,-8,3,8],"solution":"(8/(3+((-8)/3)))","special":"basic"},{"nums":[3,3,7,7],"solution":"(7*(3+(3/7)))","special":"basic"},{"nums":[4,7,4,-7],"solution":"((-7)*((4/7)-4))","special":"basic"},{"nums":[3,1,-6,4],"solution":"((-6)/((3/4)-1))","special":"basic"},{"nums":[3,7,-3,-7],"solution":"((-7)*((-3)-(3/7)))","special":"basic"},{"nums":[3,3,8,8],"solution":"(8/(3-(8/3)))","special":"basic"},{"nums":[5,1,5,5],"solution":"(5*(5-(1/5)))","special":"basic"}]},"advanced":{"easy":[{"nums":[4,4,-8,9],"solution":"(((4!)*4)+((-8)*9))","special":"!"},{"nums":[-4,3,9,5],"solution":"((9+5)-((-4)-(3!)))","special":"!"},{"nums":[5,4,4,-7],"solution":"((4*(5-(-7)))-(4!))","special":"!"},{"nums":[5,0,2,4],"solution":"((4!)+(2*(5*0)))","special":"!"},{"nums":[6,0,1,4],"solution":"((6*0)+(1*(4!)))","special":"!"},{"nums":[8,4,3,8],"solution":"(3*(((4!)-8)-8))","special":"!"},{"nums":[8,6,7,4],"solution":"((√(4)*(8+7))-6)","special":"√"},{"nums":[3,-3,-6,8],"solution":"(8*((-6)+((3!)-(-3))))","special":"!"},{"nums":[4,4,0,1],"solution":"(((4!)*1)+(4*0))","special":"!"},{"nums":[4,6,3,4],"solution":"((4!)*(4-(6-3)))","special":"!"},{"nums":[-2,3,6,0],"solution":"(((-2)+(3!))*(6+0))","special":"!"},{"nums":[4,-6,-4,1],"solution":"((4!)*(((-4)-(-6))-1))","special":"!"},{"nums":[1,3,5,-5],"solution":"(((3!)*5)-(1-(-5)))","special":"!"},{"nums":[-4,-5,6,4],"solution":"(6*((4!)-((-4)*(-5))))","special":"!"},{"nums":[3,0,-6,-2],"solution":"(((3!)+0)*((-2)-(-6)))","special":"!"},{"nums":[9,-4,5,7],"solution":"((5+7)-(√(9)*(-4)))","special":"√"},{"nums":[2,6,2,3],"solution":"((2*6)+(2*(3!)))","special":"!"},{"nums":[-1,3,1,6],"solution":"(6*(((-1)+(3!))-1))","special":"!"},{"nums":[5,4,6,2],"solution":"((4!)*(2+(5-6)))","special":"!"},{"nums":[5,3,5,1],"solution":"((5*(3!))-(5+1))","special":"!"},{"nums":[-9,3,-1,5],"solution":"((3!)*(((-9)*(-1))-5))","special":"!"},{"nums":[9,4,2,9],"solution":"((4!)+(2*(9-9)))","special":"!"},{"nums":[-2,3,4,-8],"solution":"((4*((-2)+(3!)))-(-8))","special":"!"},{"nums":[9,6,5,4],"solution":"(6*((√(9)+5)-4))","special":"√"},{"nums":[4,0,9,5],"solution":"((4!)+(5*(0*9)))","special":"!"},{"nums":[9,8,9,0],"solution":"((√(9)*8)+(9*0))","special":"√"},{"nums":[3,-7,3,1],"solution":"(((3!)-3)*(1-(-7)))","special":"!"},{"nums":[5,4,6,3],"solution":"((6*(5+3))-(4!))","special":"!"}],"medium":[{"nums":[5,8,1,-9],"solution":"(((5!)/8)-(1*(-9)))","special":"!"},{"nums":[2,-5,8,6],"solution":"(((6!)/(-5))/(2-8))","special":"!"},{"nums":[6,-9,-3,5],"solution":"(((6!)/5)/((-3)-(-9)))","special":"!"},{"nums":[0,8,2,3],"solution":"((0+8)*((3!)/2))","special":"!"},{"nums":[5,8,-4,6],"solution":"(((5!)/6)+(8+(-4)))","special":"!"},{"nums":[5,5,-6,7],"solution":"(((5!)/5)*((-6)+7))","special":"!"},{"nums":[1,6,-5,5],"solution":"(((6!)/5)/(1-(-5)))","special":"!"},{"nums":[3,6,1,8],"solution":"((6^3)/(1+8))","special":"^"},{"nums":[2,5,6,1],"solution":"((5!)/(1-(2-6)))","special":"!"},{"nums":[6,1,6,5],"solution":"(((6!)*1)/(6*5))","special":"!"},{"nums":[-9,3,2,5],"solution":"((5*((3!)/2))-(-9))","special":"!"},{"nums":[1,9,9,-7],"solution":"((1-(-7))*(9/√(9)))","special":"√"},{"nums":[5,8,5,6],"solution":"((8*6)-((5!)/5))","special":"!"},{"nums":[6,9,7,-2],"solution":"(√(9)-((6*7)/(-2)))","special":"√"},{"nums":[5,-1,7,1],"solution":"((5!)/(((-1)+7)-1))","special":"!"},{"nums":[3,-9,4,8],"solution":"((3!)-(((-9)*8)/4))","special":"!"},{"nums":[5,2,-3,1],"solution":"(((5!)*1)/(2-(-3)))","special":"!"},{"nums":[7,-2,0,5],"solution":"((0+(5!))/(7+(-2)))","special":"!"},{"nums":[7,5,2,1],"solution":"(((5!)*1)/(7-2))","special":"!"},{"nums":[9,-3,6,8],"solution":"((8-((6!)/9))/(-3))","special":"!"},{"nums":[9,7,5,7],"solution":"((5!)/(7-(9-7)))","special":"!"},{"nums":[5,5,9,1],"solution":"((5!)/(1-(5-9)))","special":"!"},{"nums":[7,7,5,5],"solution":"((7-7)+((5!)/5))","special":"!"},{"nums":[6,7,6,2],"solution":"(((6!)/6)/(7-2))","special":"!"},{"nums":[6,5,6,0],"solution":"(((6!)/5)/(6+0))","special":"!"},{"nums":[7,6,8,2],"solution":"(((6!)/2)/(7+8))","special":"!"},{"nums":[5,6,7,5],"solution":"(((5!)/5)*(7-6))","special":"!"},{"nums":[6,5,5,1],"solution":"(((6!)/5)/(5+1))","special":"!"}],"hard":[{"nums":[-6,0,5,5],"solution":"(((-6)*0)+((5!)/5))","special":"!"},{"nums":[5,5,0,2],"solution":"(((5!)/5)+(0*2))","special":"!"},{"nums":[7,7,5,1],"solution":"(7+(((5!)-1)/7))","special":"!"},{"nums":[1,5,-4,-6],"solution":"((-6)-((1*(5!))/(-4)))","special":"!"},{"nums":[0,2,3,5],"solution":"((5!)/(3+(0+2)))","special":"!"},{"nums":[5,5,9,3],"solution":"(9+((5!)/(5+3)))","special":"!"},{"nums":[9,3,6,0],"solution":"((6^3)/(9+0))","special":"^"},{"nums":[5,5,0,9],"solution":"(((5!)/5)+(0*9))","special":"!"},{"nums":[0,5,5,0],"solution":"((0+(5!))/(5+0))","special":"!"},{"nums":[-5,8,5,2],"solution":"((5!)/(2+((-5)+8)))","special":"!"},{"nums":[5,5,8,8],"solution":"(((5!)/5)+(8-8))","special":"!"},{"nums":[7,-2,5,8],"solution":"((7-(-2))+((5!)/8))","special":"!"},{"nums":[-7,2,3,6],"solution":"((6-((-7)*(3!)))/2)","special":"!"},{"nums":[5,2,-5,-8],"solution":"((5!)/((2+(-5))-(-8)))","special":"!"},{"nums":[9,7,9,-7],"solution":"(√(9)*(9+(7/(-7))))","special":"√"},{"nums":[-2,3,5,0],"solution":"((0-(5!))/((-2)-3))","special":"!"},{"nums":[5,5,2,5],"solution":"(((5!)*2)/(5+5))","special":"!"},{"nums":[5,0,-5,8],"solution":"((0*8)-((5!)/(-5)))","special":"!"},{"nums":[5,1,6,-4],"solution":"((((5!)*1)/6)-(-4))","special":"!"},{"nums":[5,-1,7,7],"solution":"(7+(((5!)+(-1))/7))","special":"!"},{"nums":[0,5,7,5],"solution":"((0*7)+((5!)/5))","special":"!"},{"nums":[5,5,-5,5],"solution":"(((-5)+((5!)+5))/5)","special":"!"},{"nums":[5,5,8,2],"solution":"((5!)/(2-(5-8)))","special":"!"},{"nums":[5,6,7,7],"solution":"((5!)/(6-(7/7)))","special":"!"},{"nums":[0,5,9,-5],"solution":"((0*9)-((5!)/(-5)))","special":"!"},{"nums":[5,5,1,-9],"solution":"((5!)/((1-5)-(-9)))","special":"!"},{"nums":[9,7,7,9],"solution":"(√(9)*(9-(7/7)))","special":"√"},{"nums":[1,8,9,9],"solution":"((1*8)*(9/√(9)))","special":"√"}]}};
     // V0.8: คลังกติกาเบื้องต้นสำหรับเด็กที่เริ่มฝึก (ทุกข้อใช้ครบ 4 ใบ)
-    const beginnerPuzzles = [{"nums":[1,2,3,4],"solution":"1*2*3*4","special":"basic"},{"nums":[1,1,4,6],"solution":"1*1*4*6","special":"basic"},{"nums":[1,1,3,8],"solution":"1*1*3*8","special":"basic"},{"nums":[4,4,4,4],"solution":"4*4+4+4","special":"basic"},{"nums":[6,6,6,6],"solution":"6+6+6+6","special":"basic"},{"nums":[9,9,3,3],"solution":"9+9+3+3","special":"basic"},{"nums":[8,8,4,4],"solution":"8+8+4+4","special":"basic"},{"nums":[9,8,4,3],"solution":"9+8+4+3","special":"basic"},{"nums":[7,7,5,5],"solution":"7+7+5+5","special":"basic"},{"nums":[9,9,4,2],"solution":"9+9+4+2","special":"basic"},{"nums":[8,7,5,4],"solution":"8+7+5+4","special":"basic"},{"nums":[8,6,6,4],"solution":"8+6+6+4","special":"basic"},{"nums":[9,6,5,4],"solution":"9+6+5+4","special":"basic"},{"nums":[7,6,6,5],"solution":"7+6+6+5","special":"basic"},{"nums":[1,1,4,5],"solution":"4*(5+1)*1","special":"basic"},{"nums":[1,2,2,6],"solution":"6*(2+2)*1","special":"basic"},{"nums":[1,3,3,5],"solution":"3*(3+5)*1","special":"basic"},{"nums":[1,2,3,9],"solution":"2*(3+9)*1","special":"basic"},{"nums":[0,1,4,6],"solution":"6*4+0*1","special":"basic"},{"nums":[1,1,5,5],"solution":"5*5-1*1","special":"basic"},{"nums":[2,2,3,8],"solution":"3*8+2-2","special":"basic"},{"nums":[3,3,4,6],"solution":"4*6+3-3","special":"basic"},{"nums":[5,5,4,6],"solution":"4*6+5-5","special":"basic"},{"nums":[2,2,4,6],"solution":"4*6+2-2","special":"basic"},{"nums":[1,2,4,6],"solution":"6*4*(2-1)","special":"basic"}];
+    const beginnerPuzzles = [{"nums":[1,2,3,4],"solution":"1*2*3*4","special":"basic"},{"nums":[1,1,4,6],"solution":"1*1*4*6","special":"basic"},{"nums":[1,1,3,8],"solution":"1*1*3*8","special":"basic"},{"nums":[4,4,4,4],"solution":"4*4+4+4","special":"basic"},{"nums":[6,6,6,6],"solution":"6+6+6+6","special":"basic"},{"nums":[9,9,3,3],"solution":"9+9+3+3","special":"basic"},{"nums":[8,8,4,4],"solution":"8+8+4+4","special":"basic"},{"nums":[9,8,4,3],"solution":"9+8+4+3","special":"basic"},{"nums":[7,7,5,5],"solution":"7+7+5+5","special":"basic"},{"nums":[9,9,4,2],"solution":"9+9+4+2","special":"basic"},{"nums":[8,7,5,4],"solution":"8+7+5+4","special":"basic"},{"nums":[8,6,6,4],"solution":"8+6+6+4","special":"basic"},{"nums":[9,6,5,4],"solution":"9+6+5+4","special":"basic"},{"nums":[7,6,6,5],"solution":"7+6+6+5","special":"basic"},{"nums":[1,1,4,5],"solution":"4*(5+1)*1","special":"basic"},{"nums":[1,2,2,6],"solution":"6*(2+2)*1","special":"basic"},{"nums":[1,3,3,5],"solution":"3*(3+5)*1","special":"basic"},{"nums":[1,2,3,9],"solution":"2*(3+9)*1","special":"basic"},{"nums":[0,1,4,6],"solution":"6*4+0*1","special":"basic"},{"nums":[1,1,5,5],"solution":"5*5-1*1","special":"basic"},{"nums":[2,2,3,8],"solution":"3*8+2-2","special":"basic"},{"nums":[3,3,4,6],"solution":"4*6+3-3","special":"basic"},{"nums":[5,5,4,6],"solution":"4*6+5-5","special":"basic"},{"nums":[2,2,4,6],"solution":"4*6+2-2","special":"basic"},{"nums":[1,1,6,4],"solution":"6*4+1-1","special":"basic"}];
     function playablePool(mode, difficulty) {
       if (mode === 'basic' && difficulty === 'easy') return beginnerPuzzles;
       const full = puzzleBank[mode][difficulty];
@@ -612,7 +687,49 @@
       return items;
     }
     // V0.7: คะแนนและเวลาเป็นสถิติส่วนตัวในเครื่อง ไม่มีฐานข้อมูล/Leaderboard
-    const STAT_KEY = 'math24-advanced-stats-v07';
+    const STAT_KEY = 'math24-advanced-stats-v07'; // ใช้คีย์เดิมเพื่อรักษาสถิติเดิม
+    const playStyleSelect = document.getElementById('play-style');
+    const durationSelect = document.getElementById('contest-duration');
+    const durationBox = document.getElementById('contest-duration-box');
+    const startContestButton = document.getElementById('start-competition');
+    const viewContestResultButton = document.getElementById('view-contest-result');
+    const competitionProgress = document.getElementById('competition-progress');
+    const timerLabel = document.getElementById('timer-label');
+    const resultDialog = document.getElementById('contest-result-dialog');
+    let competition = null; // {active, ended, queue, completed, solved, skipped, score, ...}
+    let hintPenalty = 0;
+    function inContestView() { return competition && (competition.active || competition.ended); }
+    function contestTimeLeft() {
+      return competition ? Math.max(0, competition.endsAt - (competition.ended ? competition.finishedAt : Date.now())) : 0;
+    }
+    function formatRemaining(ms) { return formatElapsed(Math.ceil(ms / 1000) * 1000); }
+    function syncContestUI() {
+      const active = !!competition?.active;
+      const selected = playStyleSelect.value === 'competition';
+      modeSelect.disabled = active;
+      difficultySelect.disabled = active;
+      playStyleSelect.disabled = active;
+      durationSelect.disabled = active;
+      durationBox.hidden = !selected;
+      startContestButton.hidden = !selected || active;
+      viewContestResultButton.hidden = !competition?.ended || !selected;
+      startContestButton.textContent = competition?.ended ? 'แข่งอีกครั้ง' : 'เริ่มการแข่งขัน';
+      competitionProgress.hidden = !inContestView();
+      if (inContestView()) {
+        const done = competition.completed;
+        competitionProgress.textContent = competition.active
+          ? `การแข่งขัน · ข้อ ${Math.min(10, done + (puzzleStatus === 'active' ? 1 : 0))}/10 · เวลาที่เลือก ${competition.minutes} นาที`
+          : `จบการแข่งขันแล้ว · ทำไป ${done}/10 ข้อ · ดูผลหรือเริ่มรอบใหม่ได้`;
+      }
+      document.querySelector('.actions').dataset.competition = inContestView() ? 'on' : 'off';
+      document.getElementById('solution').hidden = !!inContestView();
+      document.getElementById('new').disabled = !!competition?.ended;
+      document.getElementById('new').textContent = active
+        ? (competition.completed >= 10 ? 'ดูผลการแข่งขัน' : (puzzleStatus === 'active' ? 'ข้ามข้อ' : 'ข้อต่อไป'))
+        : (competition?.ended ? 'จบแล้ว' : 'สุ่มโจทย์');
+      document.getElementById('reset-round').textContent = active ? 'ยุติการแข่งขัน' : 'เริ่มรอบใหม่';
+      timerLabel.textContent = inContestView() ? 'เวลาเหลือ' : 'เวลาโจทย์นี้';
+    }
     const scoreBoard = document.getElementById('score-board');
     const timerEl = document.getElementById('timer');
     const scoreEl = document.getElementById('score');
@@ -648,29 +765,44 @@
         : `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
     }
     function renderScore() {
-      timerEl.textContent = formatElapsed(elapsedMs());
-      scoreEl.textContent = stats.score.toLocaleString('th-TH');
-      solvedCountEl.textContent = String(stats.solved);
-      const total = stats.solved+stats.skipped+stats.revealed;
-      const percentage = total ? Math.round(100*stats.solved/total) : 0;
-      const best = stats.bestMs === null ? '—' : formatElapsed(stats.bestMs);
-      scoreDetailEl.textContent = `ข้าม ${stats.skipped} · ดูเฉลย ${stats.revealed} · สำเร็จ ${percentage}% · เร็วสุด ${best}`;
+      if (inContestView()) {
+        timerEl.textContent = formatRemaining(contestTimeLeft());
+        scoreEl.textContent = competition.score.toLocaleString('th-TH');
+        solvedCountEl.textContent = String(competition.solved);
+        scoreDetailEl.textContent = `ทำแล้ว ${competition.completed}/10 · ข้าม ${competition.skipped} · ทำถูก ${competition.solved}`;
+      } else {
+        timerEl.textContent = formatElapsed(elapsedMs());
+        scoreEl.textContent = stats.score.toLocaleString('th-TH');
+        solvedCountEl.textContent = String(stats.solved);
+        const total = stats.solved+stats.skipped+stats.revealed;
+        const percentage = total ? Math.round(100*stats.solved/total) : 0;
+        const best = stats.bestMs === null ? '—' : formatElapsed(stats.bestMs);
+        scoreDetailEl.textContent = `ข้าม ${stats.skipped} · ดูเฉลย ${stats.revealed} · สำเร็จ ${percentage}% · เร็วสุด ${best}`;
+      }
       scoreBoard.dataset.state = puzzleStatus;
     }
     function finishPuzzle(status) {
       if (puzzleStatus !== 'active') return false;
       stoppedElapsedMs = elapsedMs();
       puzzleStatus = status;
-      if (status === 'skipped') stats.skipped++;
-      else if (status === 'revealed') stats.revealed++;
-      else if (status === 'solved') {
-        stats.solved++;
-        if (stats.bestMs === null || stoppedElapsedMs < stats.bestMs)
-          stats.bestMs = stoppedElapsedMs;
+      if (competition?.active) {
+        competition.completed++;
+        if (status === 'skipped') competition.skipped++;
+        else if (status === 'revealed') competition.skipped++;
+        else if (status === 'solved') competition.solved++;
+      } else {
+        if (status === 'skipped') stats.skipped++;
+        else if (status === 'revealed') stats.revealed++;
+        else if (status === 'solved') {
+          stats.solved++;
+          if (stats.bestMs === null || stoppedElapsedMs < stats.bestMs)
+            stats.bestMs = stoppedElapsedMs;
+        }
+        saveStats();
       }
-      saveStats();
       renderScore();
       renderHintButton();
+      syncContestUI();
       return true;
     }
     function awardPoints() {
@@ -678,21 +810,31 @@
       const duration = elapsedMs();
       const bonus = duration <= 30000 ? 10 : duration <= 60000 ? 5 : 0;
       if (!finishPuzzle('solved')) return 0;
-      stats.score += base + bonus;
-      saveStats();
+      const awarded = Math.max(0,base + bonus - hintPenalty);
+      if (competition?.active) competition.score += awarded;
+      else { stats.score += awarded; saveStats(); }
       renderScore();
-      return base + bonus;
+      return awarded;
     }
     function resetRound() {
-      if (!window.confirm('ล้างคะแนนและสถิติทั้งหมด แล้วเริ่มรอบใหม่ใช่ไหม?')) return;
+      if (competition?.active) {
+        if (!window.confirm('ยุติการแข่งขันรอบนี้ใช่ไหม? คะแนนรอบแข่งขันจะไม่รวมกับคะแนนฝึกซ้อม')) return;
+        finishCompetition('quit');
+        return;
+      }
+      if (!window.confirm('ล้างคะแนนและสถิติฝึกซ้อมทั้งหมด แล้วเริ่มรอบใหม่ใช่ไหม?')) return;
       stats = emptyStats();
       saveStats();
-      puzzleStatus = 'none'; // ไม่บันทึกโจทย์เก่าว่าข้าม เพราะเริ่มรอบใหม่
+      competition = null;
+      puzzleStatus = 'none';
       newQuestion();
       setMessage('เริ่มรอบใหม่แล้ว คะแนนเริ่มจาก 0 ขอให้สนุก!', 'hint');
     }
-    // การแสดงเวลาคำนวณจาก Date.now เสมอ แม้เบราว์เซอร์หน่วง interval ในแท็บพื้นหลัง
-    setInterval(() => { if (puzzleStatus === 'active') renderScore(); }, 250);
+    // นับเวลาจาก Date.now แม้สลับแท็บ; ระหว่างการแข่งขันเวลาไม่หยุด
+    setInterval(() => {
+      if (competition?.active && contestTimeLeft() <= 0) finishCompetition('time');
+      else if (puzzleStatus === 'active' || inContestView()) renderScore();
+    }, 250);
     document.getElementById('reset-round').addEventListener('click', resetRound);
     // V0.8: คำใบ้เฉพาะง่าย (2 ครั้ง) / ปานกลาง (1 ครั้ง) / ยาก (ไม่มี)
     const hintButton = document.getElementById('hint-button');
@@ -703,8 +845,9 @@
       const limit = d === 'easy' ? 2 : d === 'medium' ? 1 : 0;
       hintButton.hidden = limit === 0;
       actionsBox.dataset.hints = limit ? 'on' : 'off';
-      hintButton.disabled = !limit || hintStage >= limit || puzzleStatus === 'solved' || puzzleStatus === 'revealed';
-      hintButton.textContent = limit ? `คำใบ้ ${hintStage}/${limit}` : 'คำใบ้';
+      const charge = d === 'easy' ? 5 : d === 'medium' ? 10 : 0;
+      hintButton.disabled = !limit || hintStage >= limit || puzzleStatus !== 'active' || (competition?.active && contestTimeLeft() <= 0);
+      hintButton.textContent = limit ? `คำใบ้ ${hintStage}/${limit} (−${charge})` : 'คำใบ้';
     }
     function operationHint(solution) {
       const clean = solution.replace(/\(-[1-9]\)/g, '');
@@ -744,34 +887,49 @@
       const limit = current.difficulty === 'easy' ? 2 : current.difficulty === 'medium' ? 1 : 0;
       if (hintStage >= limit) return;
       hintStage++;
+      const charge = current.difficulty === 'easy' ? 5 : 10;
+      hintPenalty += charge;
       const hint = hintStage === 1 ? operationHint(current.solution) : firstStepHint(current.solution);
-      setMessage(`คำใบ้ ${hintStage}/${limit}: ${hint}`, 'hint');
+      setMessage(`คำใบ้ ${hintStage}/${limit} (หัก ${charge} คะแนนหากตอบถูก): ${hint} · รวมค่าคำใบ้ข้อนี้ ${hintPenalty} คะแนน`, 'hint');
       renderHintButton();
     }
     hintButton.addEventListener('click', showHint);
     function newQuestion() {
+      if (competition?.ended) { setMessage('การแข่งขันจบแล้ว กดแข่งอีกครั้งหรือเปลี่ยนเป็นฝึกซ้อม', 'hint'); return; }
+      if (competition?.active && contestTimeLeft() <= 0) { finishCompetition('time'); return; }
       if (puzzleStatus === 'active') finishPuzzle('skipped');
+      if (competition?.active && competition.completed >= 10) { finishCompetition('complete'); return; }
       const mode = modeSelect.value;
       const difficulty = difficultySelect.value;
-      const pool = playablePool(mode, difficulty);
-      const canHaveNegatives = pool.some(p => p.nums.some(n => n < 0));
-      const wantNegative = canHaveNegatives && Math.random() < .45;
-      const preferred = pool.filter(p => p.nums.some(n => n < 0) === wantNegative);
-      const choices = preferred.length ? preferred : pool;
-      const keyOf = p => `${mode}:${difficulty}:${[...p.nums].sort((a,b)=>a-b).join(',')}`;
-      const fresh = choices.filter(p => !recentPuzzles.includes(keyOf(p)));
-      const picks = fresh.length ? fresh : choices;
-      const chosen = picks[Math.floor(Math.random() * picks.length)];
+      let chosen;
+      if (competition?.active) {
+        chosen = competition.queue[competition.completed];
+      } else {
+        const pool = playablePool(mode, difficulty);
+        const canHaveNegatives = pool.some(p => p.nums.some(n => n < 0));
+        const wantNegative = canHaveNegatives && Math.random() < .45;
+        const preferred = pool.filter(p => p.nums.some(n => n < 0) === wantNegative);
+        const choices = preferred.length ? preferred : pool;
+        const keyOf = p => `${mode}:${difficulty}:${[...p.nums].sort((a,b)=>a-b).join(',')}`;
+        const fresh = choices.filter(p => !recentPuzzles.includes(keyOf(p)));
+        const picks = fresh.length ? fresh : choices;
+        chosen = picks[Math.floor(Math.random() * picks.length)];
+      }
       if (!chosen) throw Error('ไม่มีโจทย์สำหรับระดับนี้');
       // ยืนยันว่าคำตอบตรงกับการ์ดและกติกาปัจจุบันจริงก่อนนำมาแสดง
       const value = calculateAnswer(chosen.solution, chosen.nums, mode);
       if (!is24(value)) throw Error('ตรวจเฉลยโจทย์ไม่ผ่าน');
-      recentPuzzles.push(keyOf(chosen));
-      if (recentPuzzles.length > 8) recentPuzzles.shift();
+      if (!competition?.active) {
+        const key = `${mode}:${difficulty}:${[...chosen.nums].sort((a,b)=>a-b).join(',')}`;
+        recentPuzzles.push(key);
+        if (recentPuzzles.length > 8) recentPuzzles.shift();
+      }
       current = {...chosen, nums:shuffle([...chosen.nums]), difficulty};
       hintStage = 0;
+      hintPenalty = 0;
       puzzleStatus = 'active';
       renderHintButton();
+      syncContestUI();
       startedAt = Date.now();
       stoppedElapsedMs = 0;
       renderScore();
@@ -958,6 +1116,7 @@
       setMessage('ล้างสูตรแล้ว ลองพิมพ์ใหม่ได้เลย', 'hint');
     }
     function showSolution() {
+      if (competition?.active) { setMessage('ระหว่างแข่งขันจะไม่เปิดเฉลย กรุณาทำโจทย์หรือข้ามข้อ', 'error'); return; }
       if (puzzleStatus === 'active') finishPuzzle('revealed');
       setMessage(puzzleStatus === 'solved' ? 'ตัวอย่างเฉลย (ข้อนี้ได้คะแนนแล้ว): ' : 'ตัวอย่างเฉลย (ข้อนี้ไม่ได้คะแนน): ', 'hint');
       const expr = current.solution.replace(/\^(-?\d)/g, '^($1)');
@@ -967,14 +1126,17 @@
       message.appendChild(out);
     }
     function checkAnswer() {
+      if (competition?.active && contestTimeLeft() <= 0) { finishCompetition('time'); return; }
+      if (competition?.ended) { setMessage('การแข่งขันจบแล้ว หากต้องการเล่นต่อให้กดแข่งอีกครั้งหรือกลับไปฝึกซ้อม', 'hint'); return; }
       try {
         const value = calculateAnswer(input.value);
         if (is24(value)) {
           if (puzzleStatus === 'active') {
             const gained = awardPoints();
-            setMessage(`✓ ถูกต้อง! ได้ 24 พอดี · +${gained} คะแนน · เวลา ${formatElapsed(stoppedElapsedMs)}`, 'success');
+            setMessage(`✓ ถูกต้อง! ได้ 24 พอดี · +${gained} คะแนน${hintPenalty ? ` (หักค่าคำใบ้ ${hintPenalty})` : ''} · เวลา ${formatElapsed(stoppedElapsedMs)}`, 'success');
+            if (competition?.active && competition.completed >= 10) finishCompetition('complete');
           } else if (puzzleStatus === 'solved') {
-            setMessage('✓ ถูกต้อง! ข้อนี้รับคะแนนไปแล้ว กดสุ่มโจทย์เพื่อเล่นข้อต่อไป', 'success');
+            setMessage('✓ ถูกต้อง! ข้อนี้รับคะแนนไปแล้ว กดข้อต่อไปเพื่อเล่นต่อ', 'success');
           } else {
             setMessage('✓ สูตรถูกต้อง แต่ข้อนี้ดูเฉลยไปแล้วจึงไม่เพิ่มคะแนน', 'hint');
           }
@@ -982,6 +1144,65 @@
           (value.d === 1n ? String(value.n) : `${value.n}/${value.d}`) + ') ลองอีกครั้ง!', 'error');
       } catch (error) { setMessage(error.message, 'error'); }
     }
+
+    function startCompetition() {
+      const mode = modeSelect.value;
+      const difficulty = difficultySelect.value;
+      const minutes = Number(durationSelect.value);
+      const bank = playablePool(mode,difficulty);
+      // unique per 4-number multiset; choose ten unique puzzles
+      const byKey = new Map();
+      for (const item of shuffle([...bank])) {
+        const key = [...item.nums].sort((a,b)=>a-b).join(',');
+        if (!byKey.has(key)) byKey.set(key,item);
+      }
+      const queue = shuffle([...byKey.values()]).slice(0,10);
+      if (queue.length < 10) { setMessage('คลังโจทย์สำหรับแข่งมีไม่ถึง 10 ชุด กรุณาเปลี่ยนระดับ', 'error'); return; }
+      const now = Date.now();
+      competition = { active:true, ended:false, queue, completed:0, solved:0, skipped:0,
+        score:0, minutes, startsAt:now, endsAt:now+minutes*60000 };
+      puzzleStatus = 'none'; // ไม่บันทึกโจทย์ฝึกซ้อมเดิมว่าข้าม
+      syncContestUI();
+      newQuestion();
+      setMessage(`เริ่มแข่ง 10 ข้อ ภายใน ${minutes} นาที · คำใบ้มีค่าคะแนน · ขอให้สนุก!`, 'hint');
+    }
+    function finishCompetition(reason='complete') {
+      if (!competition?.active) return;
+      if (puzzleStatus === 'active') {
+        // เมื่อหมดเวลา/ยุติ: ข้อที่กำลังทำยังไม่ถือว่าข้ามด้วยตนเอง
+        puzzleStatus = 'finished';
+        stoppedElapsedMs = elapsedMs();
+      }
+      competition.active = false;
+      competition.ended = true;
+      competition.reason = reason;
+      competition.finishedAt = Date.now();
+      document.getElementById('contest-final-score').textContent = String(competition.score);
+      const unplayed = 10 - competition.completed;
+      document.getElementById('contest-final-stats').innerHTML =
+        `<span><strong>${competition.solved}</strong>ตอบถูก</span>`+
+        `<span><strong>${competition.skipped}</strong>ข้าม</span>`+
+        `<span><strong>${competition.completed}/10</strong>ข้อที่ทำ</span>`+
+        `<span><strong>${unplayed}</strong>ข้อที่ยังไม่จบ</span>`;
+      const labels = {complete:'ครบ 10 ข้อแล้ว!',time:'หมดเวลาการแข่งขัน',quit:'ยุติการแข่งขัน'};
+      document.getElementById('contest-result-note').textContent =
+        `${labels[reason] || 'จบการแข่งขัน'} · คะแนนนี้เป็นผลเฉพาะรอบ ไม่รวมกับสถิติฝึกซ้อม`;
+      syncContestUI(); renderHintButton(); renderScore();
+      if (!resultDialog.open) resultDialog.showModal();
+      setMessage('จบการแข่งขันแล้ว สามารถดูคะแนนหรือเริ่มแข่งรอบใหม่ได้', 'hint');
+    }
+    playStyleSelect.addEventListener('change', () => {
+      if (competition?.active) return;
+      competition = null;
+      puzzleStatus = 'none';
+      syncContestUI(); renderScore(); newQuestion();
+    });
+    startContestButton.addEventListener('click', startCompetition);
+    viewContestResultButton.addEventListener('click', () => { if (competition?.ended && !resultDialog.open) resultDialog.showModal(); });
+    document.getElementById('close-contest-result').addEventListener('click', () => resultDialog.close());
+    document.getElementById('replay-contest').addEventListener('click', () => {
+      resultDialog.close(); startCompetition();
+    });
 
     // ปุ่มในเว็บ: ไม่ต้องเปิดคีย์บอร์ดมือถือทุกครั้งที่แตะ
     document.querySelectorAll('[data-insert]').forEach(button => {
@@ -1062,6 +1283,7 @@
       if (outside) rulesDialog.close();
     });
     document.querySelectorAll('.special').forEach(button => button.disabled = true);
+    syncContestUI();
     renderScore();
     newQuestion();
   </script>
