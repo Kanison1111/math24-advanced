@@ -95,6 +95,48 @@
     .solution-math { font-size: 17px; font-weight: 700; display: inline-block; padding-left: 3px; }
     .rules { max-width: 600px; margin: 17px auto 0; text-align: center;
       font-size: 12px; line-height: 1.7; color: #777; }
+
+    /* ปุ่มกติกาข้างชื่อเกม */
+    .title-row { display: flex; align-items: center; justify-content: center;
+      gap: 9px; margin-bottom: 6px; }
+    .title-row h1 { margin: 0; font-size: clamp(24px, 6vw, 38px); }
+    .rule-book { display: inline-grid; place-items: center; flex: 0 0 auto;
+      width: 36px; height: 36px; border: 1px solid #e5e5e5;
+      color: #1a1a1a; background: #fff; border-radius: 10px; padding: 0; }
+    .rule-book:hover, .rule-book:active { background: #eeeeee; }
+    .rule-book:focus-visible, .dialog-close:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
+    .rule-book svg { width: 20px; height: 20px; display: block; }
+    /* หน้าต่างกติกาแบบอ่านสบายบนมือถือ */
+    .rules-dialog { width: min(530px, calc(100vw - 26px));
+      max-height: min(88dvh, 850px); overflow-y: auto;
+      margin: auto; border: 1px solid #dedede; border-radius: 19px;
+      background: #fff; color: #161616; padding: 0;
+      box-shadow: 0 18px 60px #0003; }
+    .rules-dialog::backdrop { background: #0009; }
+    .rules-dialog-head { position: sticky; top: 0; z-index: 1;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; padding: 18px 19px 13px; border-bottom: 1px solid #ececec;
+      background: #fff; }
+    .rules-dialog-head h2 { margin: 0; font-size: 20px; letter-spacing: -.025em; }
+    .dialog-close { border: 1px solid #e3e3e3; background: #f7f7f7; color: #171717;
+      border-radius: 9px; width: 36px; height: 36px; font-size: 21px; line-height: 1; }
+    .rules-dialog-content { padding: 7px 19px 23px; font-size: 14px; line-height: 1.75; }
+    .rules-dialog-content h3 { margin: 19px 0 5px; font-size: 15px; }
+    .rules-dialog-content p { margin: 5px 0 11px; }
+    .rules-dialog-content ul, .rules-dialog-content ol { padding-left: 23px; margin: 6px 0 12px; }
+    .rules-dialog-content li { margin: 4px 0; }
+    .rules-dialog-content code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      background: #f3f3f3; border-radius: 5px; padding: 1px 4px; }
+    .rules-example { background: #f6f6f6; border: 1px solid #e8e8e8;
+      padding: 10px 12px; border-radius: 10px; margin: 10px 0; }
+    .rules-muted { color: #646464; font-size: 12px; }
+    @media (max-width: 400px) {
+      .title-row { gap: 5px; }
+      .title-row h1 { font-size: clamp(23px, 6.1vw, 30px); }
+      .rule-book { width: 32px; height: 32px; border-radius: 9px; }
+      .rules-dialog-head { padding: 13px 15px 10px; }
+      .rules-dialog-content { padding: 6px 15px 19px; font-size: 13px; }
+    }
     @media (min-width: 720px) {
       .page { padding-top: 46px; }
       .game { padding: 32px 35px 29px; }
@@ -120,7 +162,20 @@
 <body>
 <main class="page">
   <header>
-    <h1>Math 24 Advanced</h1>
+    <div class="title-row">
+      <h1>Math 24 Advanced</h1>
+      <button type="button" class="rule-book" id="open-rules"
+        aria-label="อ่านกติกาการเล่นทั้งหมด" title="กติกาการเล่น"
+        aria-haspopup="dialog" aria-controls="rules-dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true" focusable="false">
+          <path d="M12 6.6c-2.6-2-5.5-2.5-9-1.8V19c3.5-.8 6.4-.2 9 1.7"/>
+          <path d="M12 6.6c2.6-2 5.5-2.5 9-1.8V19c-3.5-.8-6.4-.2-9 1.7"/>
+          <path d="M12 6.6v14.1"/>
+        </svg>
+      </button>
+    </div>
     <p>เกมคณิตศาสตร์ 24 สำหรับมัธยมปลาย</p>
   </header>
   <section class="game" aria-label="เกมคณิตศาสตร์ 24">
@@ -184,8 +239,55 @@
     </div>
     <p id="message" aria-live="polite">พร้อมเล่นแล้ว!</p>
   </section>
-  <p class="rules" id="rules">ใช้เลขบนการ์ดครบทั้ง 4 ตัว ตัวละหนึ่งครั้ง · อาจมีเลขติดลบ · กดปุ่ม (− เพื่อใส่เลขติดลบ</p>
 </main>
+
+<dialog class="rules-dialog" id="rules-dialog" aria-labelledby="rules-title">
+  <div class="rules-dialog-head">
+    <h2 id="rules-title">กติกาการเล่น</h2>
+    <button type="button" class="dialog-close" id="close-rules"
+      aria-label="ปิดกติกา">×</button>
+  </div>
+  <div class="rules-dialog-content">
+    <h3>1. เป้าหมายของเกม</h3>
+    <ul>
+      <li>นำตัวเลขบนการ์ดทั้ง <strong>4 ตัว</strong> มาเขียนเป็นสูตรให้มีค่า <strong>24 พอดี</strong></li>
+      <li>ต้องใช้การ์ดทุกใบ <strong>ใบละหนึ่งครั้ง</strong> หากมีเลขซ้ำก็นับเป็นคนละใบ</li>
+      <li>ห้ามนำเลขจากคนละการ์ดมาต่อเป็นจำนวนหลายหลัก เช่น ใช้การ์ด 1 กับ 2 เป็น 12</li>
+      <li>ใช้วงเล็บจัดลำดับการคำนวณได้ และไม่มีการปัดเศษผลลัพธ์ให้เป็น 24</li>
+    </ul>
+    <div class="rules-example"><strong>ตัวอย่าง:</strong> การ์ด 1, 2, 3, 4 → <code>1×2×3×4 = 24</code></div>
+
+    <h3>2. โหมดพื้นฐาน</h3>
+    <p>ใช้เครื่องหมาย <strong>+ − × ÷</strong> และวงเล็บได้ตามต้องการ โดยห้ามหารด้วยศูนย์</p>
+
+    <h3>3. โหมดขั้นสูง</h3>
+    <p>ใช้เครื่องหมายพื้นฐานร่วมกับ <strong>√, ! และยกกำลัง</strong> ได้ตามข้อจำกัดต่อไปนี้:</p>
+    <ul>
+      <li><strong>รากที่สอง √:</strong> จำนวนใต้รากต้องไม่ติดลบ และผลของการถอดรากต้องเป็นจำนวนตรรกยะที่ได้ตรงตัว เช่น √9 = 3 และ √(1÷4) = 1÷2 แต่ √(−9) ใช้ไม่ได้</li>
+      <li><strong>แฟกทอเรียล !:</strong> ใช้กับจำนวนเต็มตั้งแต่ 0 ถึง 6 เท่านั้น เช่น 3! = 6, 0! = 1 แต่ (−3)! ใช้ไม่ได้</li>
+      <li><strong>ยกกำลัง:</strong> เลขชี้กำลังต้องเป็นจำนวนเต็มตั้งแต่ −4 ถึง 4 เช่น (−3)² = 9 และ 2³ = 8 แต่ 0⁰ และ 0 ยกกำลังติดลบใช้ไม่ได้</li>
+      <li>ในสูตรเดียวกันใช้ <strong>√, ! และยกกำลัง อย่างละไม่เกินหนึ่งครั้ง</strong> ตามกติกาเวอร์ชันนี้</li>
+    </ul>
+    <p class="rules-muted">โหมดขั้นสูงมีเฉลยอย่างน้อยหนึ่งวิธีที่ใช้เครื่องหมายพิเศษ แต่ผู้เล่นอาจพบวิธีอื่นที่ถูกต้องตามกติกาได้เช่นกัน</p>
+
+    <h3>4. จำนวนติดลบ</h3>
+    <ul>
+      <li>โจทย์สุ่มอาจมีหรือไม่มีจำนวนติดลบก็ได้ และอาจมีเลข 0</li>
+      <li>ถ้าการ์ดเป็น −3 ต้องใช้ <code>(−3)</code> ไม่สามารถเปลี่ยนเป็น +3 ได้เอง ในทางกลับกันการ์ด +3 ก็เปลี่ยนเป็น −3 ฟรี ๆ ไม่ได้</li>
+      <li>ใช้ปุ่ม <strong>(−</strong> ทางแป้นซ้าย แล้วกดเลข 1–9 ระบบจะเติมวงเล็บปิดให้อัตโนมัติ</li>
+      <li>ปุ่ม <strong>−</strong> ทางขวาใช้ลบระหว่างนิพจน์ เช่น <code>4−3</code></li>
+    </ul>
+
+    <h3>5. วิธีใส่สูตร</h3>
+    <ul>
+      <li>แตะช่องสูตรเพื่อพิมพ์ด้วยคีย์บอร์ด หรือกดปุ่มตัวเลขทางซ้ายและเครื่องหมายทางขวา</li>
+      <li>ปุ่ม <strong>xⁿ</strong> ใช้สร้างเลขชี้กำลังแบบตัวเล็กลอยสูง กด <strong>→</strong> หรือ <strong>)</strong> เพื่อกลับมาพิมพ์ตามปกติ</li>
+      <li>ปุ่ม <strong>⌫</strong> ลบอักขระ ปุ่ม <strong>C</strong> ล้างสูตร และปุ่ม <strong>=</strong> ตรวจคำตอบ</li>
+      <li>ปุ่ม <strong>สุ่มโจทย์</strong> สร้างโจทย์ใหม่ และปุ่ม <strong>เฉลย</strong> แสดงคำตอบตัวอย่าง</li>
+    </ul>
+    <p class="rules-muted">ทุกโจทย์ถูกตรวจด้วยระบบค้นหาคำตอบก่อนแสดง โดยมีเฉลยที่ผ่านกติกาของโหมดนั้นอย่างน้อยหนึ่งวิธี</p>
+  </div>
+</dialog>
 <script>
     'use strict';
     const numberBox = document.getElementById('numbers');
@@ -710,10 +812,22 @@
     modeSelect.addEventListener('change', () => {
       const advanced = modeSelect.value === 'advanced';
       document.querySelectorAll('.special').forEach(button => button.disabled = !advanced);
-      document.getElementById('rules').textContent = advanced
-        ? 'ใช้เลขครบ 4 ตัว ตัวละหนึ่งครั้ง · อาจมีเลขติดลบ · √ ห้ามมีค่าติดลบใต้รากและต้องถอดได้พอดี · ! สำหรับ 0–6 · ยกกำลัง −4 ถึง 4'
-        : 'ใช้เลขบนการ์ดครบ 4 ตัว ตัวละหนึ่งครั้ง · อาจมีเลขติดลบ · ใช้ + − × ÷ และวงเล็บ · ต้องได้ 24 พอดี';
       newQuestion();
+    });
+
+    // สมุดกติกาข้างชื่อเกม: เปิด-ปิดด้วยคลิก, Esc และแตะพื้นที่นอกหน้าต่าง
+    const rulesDialog = document.getElementById('rules-dialog');
+    document.getElementById('open-rules').addEventListener('click', () => {
+      rulesDialog.showModal();
+    });
+    document.getElementById('close-rules').addEventListener('click', () => {
+      rulesDialog.close();
+    });
+    rulesDialog.addEventListener('click', event => {
+      const rect = rulesDialog.getBoundingClientRect();
+      const outside = event.clientX < rect.left || event.clientX > rect.right ||
+        event.clientY < rect.top || event.clientY > rect.bottom;
+      if (outside) rulesDialog.close();
     });
     document.querySelectorAll('.special').forEach(button => button.disabled = true);
     newQuestion();
