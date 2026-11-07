@@ -82,8 +82,12 @@
     .key[disabled] { opacity: .25; cursor: not-allowed; }
     .key-spacer { pointer-events: none; }
     .key sup { font-size: 12px; vertical-align: super; }
-    .actions { display: grid; grid-template-columns: 1.2fr 1fr 1fr;
-      gap: 9px; margin-top: 19px; }
+    .actions { display: grid; grid-template-columns: 1.15fr 1fr 1fr .9fr;
+      gap: 8px; margin-top: 19px; }
+    .actions[data-hints="off"] { grid-template-columns: 1.2fr 1fr 1fr; }
+    .action.hint-action { background: #f3f3f3; }
+    .action[hidden] { display: none; }
+    .action[disabled] { color: #999; cursor: not-allowed; }
     .action { border: 1px solid #dedede; border-radius: 11px; background: #fff;
       color: #151515; min-height: 48px; font-size: 13px; font-weight: 700; padding: 8px 5px; }
     .action:hover { background: #f3f3f3; }
@@ -288,6 +292,7 @@
       <button type="button" class="action primary" id="check">ตรวจคำตอบ</button>
       <button type="button" class="action" id="new">สุ่มโจทย์</button>
       <button type="button" class="action" id="solution">เฉลย</button>
+      <button type="button" class="action hint-action" id="hint-button" aria-label="ขอคำใบ้">คำใบ้</button>
     </div>
     <p id="message" aria-live="polite">พร้อมเล่นแล้ว!</p>
   </section>
@@ -315,11 +320,11 @@
     <h3>3. การเลือกระดับความยาก</h3>
     <p>เลือกรูปแบบ <strong>พื้นฐาน/ขั้นสูง</strong> แยกจากระดับ <strong>ง่าย/ปานกลาง/ยาก</strong> ได้</p>
     <ul>
-      <li><strong>พื้นฐาน — ง่าย:</strong> มีวิธีทำโดยไม่ต้องใช้การหาร</li>
-      <li><strong>พื้นฐาน — ปานกลาง:</strong> ต้องใช้การหารในวิธีที่ Solver ตรวจพบ แต่ยังสามารถคำนวณโดยมีผลระหว่างทางเป็นจำนวนเต็ม</li>
-      <li><strong>พื้นฐาน — ยาก:</strong> วิธีที่ Solver ตรวจพบต้องมีเศษส่วนระหว่างทาง</li>
-      <li><strong>ขั้นสูง — ง่าย:</strong> มีเฉลยที่ใช้เครื่องหมายขั้นสูง โดยไม่ต้องหาร</li>
-      <li><strong>ขั้นสูง — ปานกลาง:</strong> เฉลยขั้นสูงที่ค้นพบต้องใช้การหาร แต่ยังคำนวณระหว่างทางเป็นจำนวนเต็มได้</li>
+      <li><strong>พื้นฐาน — ง่าย:</strong> โจทย์เลขไม่ติดลบ คัดรูปแบบที่คิดตรงไปตรงมา มีวิธีทำโดยไม่ต้องหาร</li>
+      <li><strong>พื้นฐาน — ปานกลาง:</strong> โจทย์เลขไม่ติดลบ เฉลยตัวอย่างมีการหาร แต่คำนวณระหว่างทางเป็นจำนวนเต็มได้</li>
+      <li><strong>พื้นฐาน — ยาก:</strong> อาจมีเลขติดลบ และมีขั้นตอนคิดด้วยเศษส่วนในเฉลยตัวอย่าง</li>
+      <li><strong>ขั้นสูง — ง่าย:</strong> ไม่มีเลขติดลบ และมีเฉลยใช้เครื่องหมายขั้นสูงโดยไม่ต้องหาร</li>
+      <li><strong>ขั้นสูง — ปานกลาง:</strong> อาจมีเลขติดลบ เฉลยขั้นสูงใช้การหาร แต่คำนวณระหว่างทางเป็นจำนวนเต็มได้</li>
       <li><strong>ขั้นสูง — ยาก:</strong> Solver ไม่พบคำตอบแบบไม่ใช้การหาร ทั้งในรูปแบบพื้นฐานและวิธีขั้นสูงที่รองรับ</li>
     </ul>
     <p class="rules-muted">ระดับความยากวัดจากรูปแบบวิธีแก้ที่ Solver รองรับ ไม่ใช่การพิสูจน์ว่าผู้เล่นจะไม่พบทางออกอื่นที่ง่ายกว่า</p>
@@ -336,7 +341,7 @@
 
     <h3>5. จำนวนติดลบ</h3>
     <ul>
-      <li>โจทย์สุ่มอาจมีหรือไม่มีจำนวนติดลบก็ได้ และอาจมีเลข 0</li>
+      <li>เลขติดลบจะไม่ปรากฏในโหมดพื้นฐานระดับง่ายและปานกลาง หรือโหมดขั้นสูงระดับง่าย แต่ระดับอื่นอาจมีหรือไม่มีก็ได้ (โจทย์อาจมีเลข 0)</li>
       <li>ถ้าการ์ดเป็น −3 ต้องใช้ <code>(−3)</code> ไม่สามารถเปลี่ยนเป็น +3 ได้เอง ในทางกลับกันการ์ด +3 ก็เปลี่ยนเป็น −3 ฟรี ๆ ไม่ได้</li>
       <li>ใช้ปุ่ม <strong>(−</strong> ทางแป้นซ้าย แล้วกดเลข 1–9 ระบบจะเติมวงเล็บปิดให้อัตโนมัติ</li>
       <li>ปุ่ม <strong>−</strong> ทางขวาใช้ลบระหว่างนิพจน์ เช่น <code>4−3</code></li>
@@ -348,6 +353,7 @@
       <li>ปุ่ม <strong>xⁿ</strong> ใช้สร้างเลขชี้กำลังแบบตัวเล็กลอยสูง กด <strong>→</strong> หรือ <strong>)</strong> เพื่อกลับมาพิมพ์ตามปกติ</li>
       <li>ปุ่ม <strong>⌫</strong> ลบอักขระ ปุ่ม <strong>C</strong> ล้างสูตร และปุ่ม <strong>=</strong> ตรวจคำตอบ</li>
       <li>ปุ่ม <strong>สุ่มโจทย์</strong> สร้างโจทย์ใหม่ และปุ่ม <strong>เฉลย</strong> แสดงคำตอบตัวอย่าง</li>
+      <li><strong>คำใบ้:</strong> ระดับง่ายขอได้ 2 ขั้น (แนวทางและตัวอย่างขั้นเริ่มคิด) ระดับปานกลางขอได้ 1 ขั้น ส่วนระดับยากไม่มีคำใบ้ โดยคำใบ้ยึดจากเฉลยที่ผ่านการตรวจแล้ว</li>
     </ul>
     <p class="rules-muted">โจทย์สุ่มจากคลังที่ Solver ตรวจคำตอบและแยกระดับไว้ล่วงหน้า โดยเกมจะตรวจเฉลยอีกครั้งก่อนแสดง</p>
 
@@ -356,6 +362,7 @@
       <li>เวลาจะเริ่มนับทันทีเมื่อโจทย์ใหม่ปรากฏ และหยุดเมื่อทำถูกหรือกดดูเฉลย เวลายังเดินต่อแม้สลับแท็บหรือเปิดสมุดกติกา</li>
       <li>ทำถูกครั้งแรกได้คะแนนตามระดับ: <strong>ง่าย 10 / ปานกลาง 20 / ยาก 30 คะแนน</strong> และโบนัสความเร็ว 10 คะแนนถ้าทำได้ภายใน 30 วินาที หรือ 5 คะแนนถ้าทำได้ภายใน 60 วินาที</li>
       <li>กดตรวจซ้ำหลังทำถูกจะไม่เพิ่มคะแนนอีก และสูตรที่ไม่ถูกต้องยังสามารถลองใหม่ได้โดยไม่มีการหักคะแนน</li>
+      <li>คำใบ้ในระดับง่ายและปานกลางยังไม่หักคะแนนหรือโบนัสเวลาในรุ่นนี้ แต่เวลาโจทย์ยังเดินต่อ</li>
       <li>กด <strong>เฉลย</strong> หรือ <strong>สุ่มโจทย์</strong> ก่อนทำถูก จะไม่ได้คะแนนสำหรับโจทย์นั้น และนับเป็นดูเฉลยหรือข้ามตามลำดับ การเปลี่ยนโหมด/ความยากระหว่างโจทย์นับเป็นการข้ามเช่นกัน</li>
       <li>เปอร์เซ็นต์สำเร็จคำนวณจาก จำนวนข้อที่ทำถูก ÷ (ทำถูก + ข้าม + ดูเฉลย) × 100</li>
       <li>คะแนนและสถิติบันทึกไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่มีบัญชีหรือระบบจัดอันดับออนไลน์ ปุ่ม <strong>เริ่มรอบใหม่</strong> จะล้างคะแนนและสถิติหลังยืนยัน</li>
@@ -572,17 +579,28 @@
     // คลังโจทย์ผ่าน Solver และตรวจระดับความยากแล้วก่อนเผยแพร่
     // การสุ่มหน้าเว็บจะเลือกจากคลังนี้ และเช็กผลเฉลยอีกครั้งด้วย calculateAnswer
     const puzzleBank = {"basic":{"easy":[{"nums":[4,4,-8,9],"solution":"((4*9)-(4-(-8)))","special":"basic"},{"nums":[-4,3,9,5],"solution":"(3*((9-(-4))-5))","special":"basic"},{"nums":[5,4,4,-7],"solution":"(4*((4-5)-(-7)))","special":"basic"},{"nums":[6,0,1,4],"solution":"((6+0)*(1*4))","special":"basic"},{"nums":[8,6,7,4],"solution":"((8-7)*(6*4))","special":"basic"},{"nums":[3,-3,-6,8],"solution":"(8*((-6)-(3*(-3))))","special":"basic"},{"nums":[4,6,3,4],"solution":"((6-4)*(3*4))","special":"basic"},{"nums":[-2,3,6,0],"solution":"(((-2)-6)*(0-3))","special":"basic"},{"nums":[4,-6,-4,1],"solution":"(4+((-4)*((-6)+1)))","special":"basic"},{"nums":[7,8,-8,2],"solution":"((-8)*((7-8)-2))","special":"basic"},{"nums":[-4,-5,6,4],"solution":"(((-4)-(-5))*(6*4))","special":"basic"},{"nums":[5,8,1,-9],"solution":"((5-8)*(1+(-9)))","special":"basic"},{"nums":[8,-4,1,0],"solution":"((0-8)*((-4)+1))","special":"basic"},{"nums":[3,0,-6,-2],"solution":"((0-3)*((-6)+(-2)))","special":"basic"},{"nums":[9,-4,5,7],"solution":"((-4)+(7*(9-5)))","special":"basic"},{"nums":[2,6,2,3],"solution":"((6-2)*(2*3))","special":"basic"},{"nums":[-1,3,1,6],"solution":"((3-(-1))*(1*6))","special":"basic"},{"nums":[5,4,6,2],"solution":"(6+(2*(5+4)))","special":"basic"},{"nums":[-9,3,-1,5],"solution":"(((-9)*(-1))+(3*5))","special":"basic"},{"nums":[9,4,2,9],"solution":"((9+4)+(2+9))","special":"basic"},{"nums":[9,6,5,4],"solution":"((9+6)+(5+4))","special":"basic"},{"nums":[5,4,6,3],"solution":"(6*(3+(5-4)))","special":"basic"},{"nums":[2,3,1,7],"solution":"((2+1)+(3*7))","special":"basic"},{"nums":[7,6,4,5],"solution":"(4*(5+(7-6)))","special":"basic"},{"nums":[9,4,6,6],"solution":"((6*(9-4))-6)","special":"basic"},{"nums":[4,5,6,6],"solution":"((4*6)*(6-5))","special":"basic"},{"nums":[8,6,2,3],"solution":"((3*(8+2))-6)","special":"basic"},{"nums":[5,0,4,6],"solution":"((5*0)+(4*6))","special":"basic"}],"medium":[{"nums":[3,9,1,9],"solution":"((9/3)*(9-1))","special":"basic"},{"nums":[4,-8,-5,8],"solution":"(8*(((-8)/4)-(-5)))","special":"basic"},{"nums":[5,5,9,3],"solution":"(3*(9-(5/5)))","special":"basic"},{"nums":[-5,8,5,2],"solution":"(8*(2-((-5)/5)))","special":"basic"},{"nums":[5,5,8,8],"solution":"((5*5)-(8/8))","special":"basic"},{"nums":[3,3,5,5],"solution":"((5*5)-(3/3))","special":"basic"},{"nums":[-7,2,3,6],"solution":"((6/2)-((-7)*3))","special":"basic"},{"nums":[5,2,-5,-8],"solution":"((-8)*((5/(-5))-2))","special":"basic"},{"nums":[4,5,-8,8],"solution":"(8*(5+((-8)/4)))","special":"basic"},{"nums":[8,-9,6,4],"solution":"(6-((8*(-9))/4))","special":"basic"},{"nums":[8,9,9,4],"solution":"(8*(4-(9/9)))","special":"basic"},{"nums":[-5,-5,4,4],"solution":"(((-5)*(-5))-(4/4))","special":"basic"},{"nums":[1,9,3,8],"solution":"(8*((1*9)/3))","special":"basic"},{"nums":[4,7,5,5],"solution":"(4*(7-(5/5)))","special":"basic"},{"nums":[9,-2,-6,5],"solution":"(9+(5*((-6)/(-2))))","special":"basic"},{"nums":[5,9,4,-9],"solution":"(4*(5-(9/(-9))))","special":"basic"},{"nums":[2,0,6,8],"solution":"((6*8)/(2+0))","special":"basic"},{"nums":[4,7,6,9],"solution":"(6*((7+9)/4))","special":"basic"},{"nums":[8,9,-6,9],"solution":"((8*9)/((-6)+9))","special":"basic"},{"nums":[7,1,3,9],"solution":"((7+1)*(9/3))","special":"basic"},{"nums":[5,6,2,9],"solution":"(9+((5*6)/2))","special":"basic"},{"nums":[5,5,-5,5],"solution":"((5*5)+((-5)/5))","special":"basic"},{"nums":[5,5,8,2],"solution":"(8*(2+(5/5)))","special":"basic"},{"nums":[5,6,7,7],"solution":"(6*(5-(7/7)))","special":"basic"},{"nums":[6,6,-6,5],"solution":"((-6)*((6/6)-5))","special":"basic"},{"nums":[6,6,6,5],"solution":"(6*(5-(6/6)))","special":"basic"},{"nums":[8,4,-5,8],"solution":"(4*((8/8)-(-5)))","special":"basic"},{"nums":[0,6,-2,8],"solution":"((0-6)*(8/(-2)))","special":"basic"}],"hard":[{"nums":[1,5,-4,-6],"solution":"((-6)/(1+(5/(-4))))","special":"basic"},{"nums":[8,1,6,6],"solution":"(6/(1-(6/8)))","special":"basic"},{"nums":[8,-3,3,8],"solution":"(8/(3+(8/(-3))))","special":"basic"},{"nums":[-7,1,3,8],"solution":"(3/(1+((-7)/8)))","special":"basic"},{"nums":[4,1,6,3],"solution":"(6/(1-(3/4)))","special":"basic"},{"nums":[1,6,-4,3],"solution":"(6/(1+(3/(-4))))","special":"basic"},{"nums":[4,1,5,-6],"solution":"((-6)/(1-(5/4)))","special":"basic"},{"nums":[1,4,6,5],"solution":"(6/((5/4)-1))","special":"basic"},{"nums":[-6,8,6,-1],"solution":"(6/(((-6)/8)-(-1)))","special":"basic"},{"nums":[5,1,6,-4],"solution":"((-4)/((5/6)-1))","special":"basic"},{"nums":[4,4,7,7],"solution":"(7*(4-(4/7)))","special":"basic"},{"nums":[4,1,6,-5],"solution":"(4/(1+((-5)/6)))","special":"basic"},{"nums":[-1,6,5,-4],"solution":"((-4)/((-1)+(5/6)))","special":"basic"},{"nums":[1,5,-5,5],"solution":"((-5)*((1/5)-5))","special":"basic"},{"nums":[3,-8,3,8],"solution":"(8/(3+((-8)/3)))","special":"basic"},{"nums":[3,3,7,7],"solution":"(7*(3+(3/7)))","special":"basic"},{"nums":[4,7,4,-7],"solution":"((-7)*((4/7)-4))","special":"basic"},{"nums":[3,1,-6,4],"solution":"((-6)/((3/4)-1))","special":"basic"},{"nums":[3,7,-3,-7],"solution":"((-7)*((-3)-(3/7)))","special":"basic"},{"nums":[3,3,8,8],"solution":"(8/(3-(8/3)))","special":"basic"},{"nums":[5,1,5,5],"solution":"(5*(5-(1/5)))","special":"basic"}]},"advanced":{"easy":[{"nums":[4,4,-8,9],"solution":"(((4!)*4)+((-8)*9))","special":"!"},{"nums":[-4,3,9,5],"solution":"((9+5)-((-4)-(3!)))","special":"!"},{"nums":[5,4,4,-7],"solution":"((4*(5-(-7)))-(4!))","special":"!"},{"nums":[5,0,2,4],"solution":"((4!)+(2*(5*0)))","special":"!"},{"nums":[6,0,1,4],"solution":"((6*0)+(1*(4!)))","special":"!"},{"nums":[8,4,3,8],"solution":"(3*(((4!)-8)-8))","special":"!"},{"nums":[8,6,7,4],"solution":"((√(4)*(8+7))-6)","special":"√"},{"nums":[3,-3,-6,8],"solution":"(8*((-6)+((3!)-(-3))))","special":"!"},{"nums":[4,4,0,1],"solution":"(((4!)*1)+(4*0))","special":"!"},{"nums":[4,6,3,4],"solution":"((4!)*(4-(6-3)))","special":"!"},{"nums":[-2,3,6,0],"solution":"(((-2)+(3!))*(6+0))","special":"!"},{"nums":[4,-6,-4,1],"solution":"((4!)*(((-4)-(-6))-1))","special":"!"},{"nums":[1,3,5,-5],"solution":"(((3!)*5)-(1-(-5)))","special":"!"},{"nums":[-4,-5,6,4],"solution":"(6*((4!)-((-4)*(-5))))","special":"!"},{"nums":[3,0,-6,-2],"solution":"(((3!)+0)*((-2)-(-6)))","special":"!"},{"nums":[9,-4,5,7],"solution":"((5+7)-(√(9)*(-4)))","special":"√"},{"nums":[2,6,2,3],"solution":"((2*6)+(2*(3!)))","special":"!"},{"nums":[-1,3,1,6],"solution":"(6*(((-1)+(3!))-1))","special":"!"},{"nums":[5,4,6,2],"solution":"((4!)*(2+(5-6)))","special":"!"},{"nums":[5,3,5,1],"solution":"((5*(3!))-(5+1))","special":"!"},{"nums":[-9,3,-1,5],"solution":"((3!)*(((-9)*(-1))-5))","special":"!"},{"nums":[9,4,2,9],"solution":"((4!)+(2*(9-9)))","special":"!"},{"nums":[-2,3,4,-8],"solution":"((4*((-2)+(3!)))-(-8))","special":"!"},{"nums":[9,6,5,4],"solution":"(6*((√(9)+5)-4))","special":"√"},{"nums":[4,0,9,5],"solution":"((4!)+(5*(0*9)))","special":"!"},{"nums":[9,8,9,0],"solution":"((√(9)*8)+(9*0))","special":"√"},{"nums":[3,-7,3,1],"solution":"(((3!)-3)*(1-(-7)))","special":"!"},{"nums":[5,4,6,3],"solution":"((6*(5+3))-(4!))","special":"!"}],"medium":[{"nums":[5,8,1,-9],"solution":"(((5!)/8)-(1*(-9)))","special":"!"},{"nums":[2,-5,8,6],"solution":"(((6!)/(-5))/(2-8))","special":"!"},{"nums":[6,-9,-3,5],"solution":"(((6!)/5)/((-3)-(-9)))","special":"!"},{"nums":[0,8,2,3],"solution":"((0+8)*((3!)/2))","special":"!"},{"nums":[5,8,-4,6],"solution":"(((5!)/6)+(8+(-4)))","special":"!"},{"nums":[5,5,-6,7],"solution":"(((5!)/5)*((-6)+7))","special":"!"},{"nums":[1,6,-5,5],"solution":"(((6!)/5)/(1-(-5)))","special":"!"},{"nums":[3,6,1,8],"solution":"((6^3)/(1+8))","special":"^"},{"nums":[2,5,6,1],"solution":"((5!)/(1-(2-6)))","special":"!"},{"nums":[6,1,6,5],"solution":"(((6!)*1)/(6*5))","special":"!"},{"nums":[-9,3,2,5],"solution":"((5*((3!)/2))-(-9))","special":"!"},{"nums":[1,9,9,-7],"solution":"((1-(-7))*(9/√(9)))","special":"√"},{"nums":[5,8,5,6],"solution":"((8*6)-((5!)/5))","special":"!"},{"nums":[6,9,7,-2],"solution":"(√(9)-((6*7)/(-2)))","special":"√"},{"nums":[5,-1,7,1],"solution":"((5!)/(((-1)+7)-1))","special":"!"},{"nums":[3,-9,4,8],"solution":"((3!)-(((-9)*8)/4))","special":"!"},{"nums":[5,2,-3,1],"solution":"(((5!)*1)/(2-(-3)))","special":"!"},{"nums":[7,-2,0,5],"solution":"((0+(5!))/(7+(-2)))","special":"!"},{"nums":[7,5,2,1],"solution":"(((5!)*1)/(7-2))","special":"!"},{"nums":[9,-3,6,8],"solution":"((8-((6!)/9))/(-3))","special":"!"},{"nums":[9,7,5,7],"solution":"((5!)/(7-(9-7)))","special":"!"},{"nums":[5,5,9,1],"solution":"((5!)/(1-(5-9)))","special":"!"},{"nums":[7,7,5,5],"solution":"((7-7)+((5!)/5))","special":"!"},{"nums":[6,7,6,2],"solution":"(((6!)/6)/(7-2))","special":"!"},{"nums":[6,5,6,0],"solution":"(((6!)/5)/(6+0))","special":"!"},{"nums":[7,6,8,2],"solution":"(((6!)/2)/(7+8))","special":"!"},{"nums":[5,6,7,5],"solution":"(((5!)/5)*(7-6))","special":"!"},{"nums":[6,5,5,1],"solution":"(((6!)/5)/(5+1))","special":"!"}],"hard":[{"nums":[-6,0,5,5],"solution":"(((-6)*0)+((5!)/5))","special":"!"},{"nums":[5,5,0,2],"solution":"(((5!)/5)+(0*2))","special":"!"},{"nums":[7,7,5,1],"solution":"(7+(((5!)-1)/7))","special":"!"},{"nums":[1,5,-4,-6],"solution":"((-6)-((1*(5!))/(-4)))","special":"!"},{"nums":[0,2,3,5],"solution":"((5!)/(3+(0+2)))","special":"!"},{"nums":[5,5,9,3],"solution":"(9+((5!)/(5+3)))","special":"!"},{"nums":[9,3,6,0],"solution":"((6^3)/(9+0))","special":"^"},{"nums":[5,5,0,9],"solution":"(((5!)/5)+(0*9))","special":"!"},{"nums":[0,5,5,0],"solution":"((0+(5!))/(5+0))","special":"!"},{"nums":[-5,8,5,2],"solution":"((5!)/(2+((-5)+8)))","special":"!"},{"nums":[5,5,8,8],"solution":"(((5!)/5)+(8-8))","special":"!"},{"nums":[7,-2,5,8],"solution":"((7-(-2))+((5!)/8))","special":"!"},{"nums":[-7,2,3,6],"solution":"((6-((-7)*(3!)))/2)","special":"!"},{"nums":[5,2,-5,-8],"solution":"((5!)/((2+(-5))-(-8)))","special":"!"},{"nums":[9,7,9,-7],"solution":"(√(9)*(9+(7/(-7))))","special":"√"},{"nums":[-2,3,5,0],"solution":"((0-(5!))/((-2)-3))","special":"!"},{"nums":[5,5,2,5],"solution":"(((5!)*2)/(5+5))","special":"!"},{"nums":[5,0,-5,8],"solution":"((0*8)-((5!)/(-5)))","special":"!"},{"nums":[5,1,6,-4],"solution":"((((5!)*1)/6)-(-4))","special":"!"},{"nums":[5,-1,7,7],"solution":"(7+(((5!)+(-1))/7))","special":"!"},{"nums":[0,5,7,5],"solution":"((0*7)+((5!)/5))","special":"!"},{"nums":[5,5,-5,5],"solution":"(((-5)+((5!)+5))/5)","special":"!"},{"nums":[5,5,8,2],"solution":"((5!)/(2-(5-8)))","special":"!"},{"nums":[5,6,7,7],"solution":"((5!)/(6-(7/7)))","special":"!"},{"nums":[0,5,9,-5],"solution":"((0*9)-((5!)/(-5)))","special":"!"},{"nums":[5,5,1,-9],"solution":"((5!)/((1-5)-(-9)))","special":"!"},{"nums":[9,7,7,9],"solution":"(√(9)*(9-(7/7)))","special":"√"},{"nums":[1,8,9,9],"solution":"((1*8)*(9/√(9)))","special":"√"}]}};
+    // V0.8: คลังกติกาเบื้องต้นสำหรับเด็กที่เริ่มฝึก (ทุกข้อใช้ครบ 4 ใบ)
+    const beginnerPuzzles = [{"nums":[1,2,3,4],"solution":"1*2*3*4","special":"basic"},{"nums":[1,1,4,6],"solution":"1*1*4*6","special":"basic"},{"nums":[1,1,3,8],"solution":"1*1*3*8","special":"basic"},{"nums":[4,4,4,4],"solution":"4*4+4+4","special":"basic"},{"nums":[6,6,6,6],"solution":"6+6+6+6","special":"basic"},{"nums":[9,9,3,3],"solution":"9+9+3+3","special":"basic"},{"nums":[8,8,4,4],"solution":"8+8+4+4","special":"basic"},{"nums":[9,8,4,3],"solution":"9+8+4+3","special":"basic"},{"nums":[7,7,5,5],"solution":"7+7+5+5","special":"basic"},{"nums":[9,9,4,2],"solution":"9+9+4+2","special":"basic"},{"nums":[8,7,5,4],"solution":"8+7+5+4","special":"basic"},{"nums":[8,6,6,4],"solution":"8+6+6+4","special":"basic"},{"nums":[9,6,5,4],"solution":"9+6+5+4","special":"basic"},{"nums":[7,6,6,5],"solution":"7+6+6+5","special":"basic"},{"nums":[1,1,4,5],"solution":"4*(5+1)*1","special":"basic"},{"nums":[1,2,2,6],"solution":"6*(2+2)*1","special":"basic"},{"nums":[1,3,3,5],"solution":"3*(3+5)*1","special":"basic"},{"nums":[1,2,3,9],"solution":"2*(3+9)*1","special":"basic"},{"nums":[0,1,4,6],"solution":"6*4+0*1","special":"basic"},{"nums":[1,1,5,5],"solution":"5*5-1*1","special":"basic"},{"nums":[2,2,3,8],"solution":"3*8+2-2","special":"basic"},{"nums":[3,3,4,6],"solution":"4*6+3-3","special":"basic"},{"nums":[5,5,4,6],"solution":"4*6+5-5","special":"basic"},{"nums":[2,2,4,6],"solution":"4*6+2-2","special":"basic"},{"nums":[1,2,4,6],"solution":"6*4*(2-1)","special":"basic"}];
+    function playablePool(mode, difficulty) {
+      if (mode === 'basic' && difficulty === 'easy') return beginnerPuzzles;
+      const full = puzzleBank[mode][difficulty];
+      // ไม่สุ่มเลขติดลบในพื้นฐานง่าย/กลาง หรือขั้นสูงง่าย
+      if (difficulty === 'easy' || (mode === 'basic' && difficulty === 'medium')) {
+        return full.filter(p => p.nums.every(n => n >= 0));
+      }
+      return full;
+    }
     const recentPuzzles = [];
     const difficultyLabels = {easy:'ง่าย', medium:'ปานกลาง', hard:'ยาก'};
     const difficultyExplanations = {
       basic: {
-        easy:'มีวิธีทำได้โดยไม่ต้องหาร',
-        medium:'ต้องใช้การหาร แต่ทำผลระหว่างทางเป็นจำนวนเต็มได้',
-        hard:'มีขั้นตอนที่ต้องคิดด้วยเศษส่วน'
+        easy:'ไม่มีเลขติดลบ · คัดโจทย์เริ่มต้นที่แก้ได้ตรงไปตรงมา',
+        medium:'ไม่มีเลขติดลบ · มีขั้นตอนหารที่ให้ผลเป็นจำนวนเต็ม',
+        hard:'อาจมีเลขติดลบ · มีขั้นตอนคิดด้วยเศษส่วน'
       },
       advanced: {
-        easy:'มีเฉลยใช้ √, ! หรือยกกำลัง โดยไม่ต้องหาร',
-        medium:'เฉลยขั้นสูงใช้การหาร แต่คำนวณเป็นจำนวนเต็มได้',
+        easy:'ไม่มีเลขติดลบ · มีวิธีใช้ √, ! หรือยกกำลังโดยไม่ต้องหาร',
+        medium:'อาจมีเลขติดลบ · ใช้การหารที่ให้ผลเป็นจำนวนเต็ม',
         hard:'ไม่พบวิธีที่ไม่ใช้การหารในขอบเขตของ Solver'
       }
     };
@@ -652,6 +670,7 @@
       }
       saveStats();
       renderScore();
+      renderHintButton();
       return true;
     }
     function awardPoints() {
@@ -675,13 +694,68 @@
     // การแสดงเวลาคำนวณจาก Date.now เสมอ แม้เบราว์เซอร์หน่วง interval ในแท็บพื้นหลัง
     setInterval(() => { if (puzzleStatus === 'active') renderScore(); }, 250);
     document.getElementById('reset-round').addEventListener('click', resetRound);
+    // V0.8: คำใบ้เฉพาะง่าย (2 ครั้ง) / ปานกลาง (1 ครั้ง) / ยาก (ไม่มี)
+    const hintButton = document.getElementById('hint-button');
+    const actionsBox = document.querySelector('.actions');
+    let hintStage = 0;
+    function renderHintButton() {
+      const d = difficultySelect.value;
+      const limit = d === 'easy' ? 2 : d === 'medium' ? 1 : 0;
+      hintButton.hidden = limit === 0;
+      actionsBox.dataset.hints = limit ? 'on' : 'off';
+      hintButton.disabled = !limit || hintStage >= limit || puzzleStatus === 'solved' || puzzleStatus === 'revealed';
+      hintButton.textContent = limit ? `คำใบ้ ${hintStage}/${limit}` : 'คำใบ้';
+    }
+    function operationHint(solution) {
+      const clean = solution.replace(/\(-[1-9]\)/g, '');
+      if (clean.includes('!')) return 'ลองใช้แฟกทอเรียล (!) กับการ์ดจำนวนเต็มบวก';
+      if (clean.includes('√')) return 'ลองพิจารณาใช้สแควรูท (√) กับจำนวนที่ถอดรากได้';
+      if (clean.includes('^')) return 'ลองใช้เลขยกกำลังเพื่อสร้างค่าที่ต้องการ';
+      if (clean.includes('/')) return 'ลองใช้การหาร (÷) ระหว่างทาง';
+      if (clean.includes('*')) return 'ลองมองหาคู่ที่คูณกันแล้วได้ 24 หรือเป็นตัวประกอบของ 24';
+      if (clean.includes('+')) return 'ลองจัดกลุ่มการบวก เพื่อให้ได้ 24';
+      return 'ลองใช้วงเล็บจัดกลุ่มตัวเลขก่อน';
+    }
+    function firstStepHint(solution) {
+      // เลือกการคำนวณย่อยที่อยู่ในสูตรเฉลยจริง ไม่แสดงสูตรเต็ม
+      const negOrDigit = '(?:\\(-[1-9]\\)|[0-9])';
+      const match = solution.match(new RegExp('\\(('+negOrDigit+')([+\\-*/])('+negOrDigit+')\\)'));
+      if (match) {
+        const a = Number(match[1].startsWith('(') ? match[1].slice(1,-1) : match[1]);
+        const b = Number(match[3].startsWith('(') ? match[3].slice(1,-1) : match[3]);
+        const sign = match[2];
+        const left = fraction(BigInt(a)), right = fraction(BigInt(b));
+        const result = sign === '+' ? add(left,right) : sign === '-' ? subtract(left,right)
+          : sign === '*' ? multiply(left,right) : divide(left,right);
+        const asText = result.d === 1n ? String(result.n) : `${result.n}/${result.d}`;
+        const symbol = {'+':'+', '-':'−', '*':'×', '/':'÷'}[sign];
+        return `ลองเริ่มจาก ${a} ${symbol} ${b} = ${asText} แล้วใช้ตัวเลขที่เหลือต่อ`;
+      }
+      const fact = solution.match(/([0-6])!/);
+      if (fact) return `ลองเริ่มจาก ${fact[1]}! = ${Number(factorial(fraction(BigInt(fact[1]))).n)} แล้วใช้ตัวเลขที่เหลือต่อ`;
+      const sqrt = solution.match(/√\(([0-9])\)/);
+      if (sqrt) return `ลองเริ่มจาก √${sqrt[1]} แล้วใช้ตัวเลขที่เหลือต่อ`;
+      const pow = solution.match(/([0-9])\^([0-9])/);
+      if (pow) return `ลองเริ่มจาก ${pow[1]} ยกกำลัง ${pow[2]} แล้วใช้ตัวเลขที่เหลือต่อ`;
+      return 'ลองจับคู่การ์ด 2 ใบแล้วคำนวณทีละส่วน จากนั้นนำผลไปเชื่อมกับเลขที่เหลือ';
+    }
+    function showHint() {
+      if (!current || puzzleStatus !== 'active') return;
+      const limit = current.difficulty === 'easy' ? 2 : current.difficulty === 'medium' ? 1 : 0;
+      if (hintStage >= limit) return;
+      hintStage++;
+      const hint = hintStage === 1 ? operationHint(current.solution) : firstStepHint(current.solution);
+      setMessage(`คำใบ้ ${hintStage}/${limit}: ${hint}`, 'hint');
+      renderHintButton();
+    }
+    hintButton.addEventListener('click', showHint);
     function newQuestion() {
       if (puzzleStatus === 'active') finishPuzzle('skipped');
       const mode = modeSelect.value;
       const difficulty = difficultySelect.value;
-      const pool = puzzleBank[mode][difficulty];
-      const wantNegative = Math.random() < .45;
-      // แต่ละระดับมีทั้งโจทย์บวกและลบ: สุ่มตามสัดส่วนโดยประมาณ
+      const pool = playablePool(mode, difficulty);
+      const canHaveNegatives = pool.some(p => p.nums.some(n => n < 0));
+      const wantNegative = canHaveNegatives && Math.random() < .45;
       const preferred = pool.filter(p => p.nums.some(n => n < 0) === wantNegative);
       const choices = preferred.length ? preferred : pool;
       const keyOf = p => `${mode}:${difficulty}:${[...p.nums].sort((a,b)=>a-b).join(',')}`;
@@ -695,7 +769,9 @@
       recentPuzzles.push(keyOf(chosen));
       if (recentPuzzles.length > 8) recentPuzzles.shift();
       current = {...chosen, nums:shuffle([...chosen.nums]), difficulty};
+      hintStage = 0;
       puzzleStatus = 'active';
+      renderHintButton();
       startedAt = Date.now();
       stoppedElapsedMs = 0;
       renderScore();
