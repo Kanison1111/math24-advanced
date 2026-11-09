@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fafafa"><title>Multiplayer · Math 24 Advanced</title>
+<link rel="stylesheet" href="./multiplayer.css"><script defer src="./multiplayer.js"></script>
+</head>
+<body><main class="shell">
+<header><a href="./index.html">← เล่นคนเดียว</a><p class="eyebrow">MATH 24 ADVANCED · V1.0</p><h1>แข่งขันไปด้วยกัน</h1><p>สร้างห้องกับเพื่อน แล้วไปให้ถึง 24</p></header>
+<aside class="notice"><strong>Frontend Prototype · ข้อมูลจำลอง</strong><br>ยังไม่เชื่อมต่อ Supabase หรือผู้เล่นจริง รหัสห้องใช้สาธิตในหน้านี้เท่านั้น เมื่อรีเฟรชข้อมูลจะเริ่มใหม่</aside>
+<nav aria-label="เมนูห้องแข่งขัน"><button id="create-tab" aria-current="page">สร้างห้อง</button><button id="join-tab">เข้าร่วมห้อง</button></nav>
+<p id="announcement" role="status"></p>
+<section id="create-panel" class="card" aria-labelledby="create-title">
+<p class="eyebrow">01 / สำหรับครูหรือเจ้าของห้อง</p><h2 id="create-title" tabindex="-1">สร้างห้องแข่งขัน</h2>
+<form id="create-form">
+<label>ชื่อห้อง<input id="room-name" required maxlength="60" placeholder="เช่น ม.5/1 คาบคณิตศาสตร์"></label>
+<div class="grid"><label>จำนวนโจทย์<select id="question-count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label>
+<label>เวลาแข่งขัน (นาที)<input id="duration" type="number" min="1" max="120" value="10" required></label>
+<label>โหมด<select id="room-mode"><option value="basic">พื้นฐาน</option><option value="advanced">ขั้นสูง</option></select></label>
+<label>ระดับความยาก<select id="difficulty"><option value="easy">ง่าย</option><option value="medium">ปานกลาง</option><option value="hard">ยาก</option><option value="mixed">แบบผสม</option></select></label></div>
+<fieldset id="mix-fields" hidden><legend>จำนวนข้อแต่ละระดับ</legend><div class="grid three"><label>ง่าย<input id="mix-easy" type="number" min="0" max="20" value="4" required></label><label>ปานกลาง<input id="mix-medium" type="number" min="0" max="20" value="3" required></label><label>ยาก<input id="mix-hard" type="number" min="0" max="20" value="3" required></label></div><p id="mix-total"></p></fieldset>
+<label>การแสดง Ranking<select id="ranking-mode"><option value="live">คะแนนสดระหว่างแข่งขัน</option><option value="final">แสดงหลังแข่งขันจบ</option></select></label>
+<p id="room-summary" class="muted"></p><p id="create-error" role="alert"></p>
+<button class="primary" id="create-submit">สร้างห้องจำลอง</button>
+</form></section>
+<section id="join-panel" class="card" hidden aria-labelledby="join-title"><p class="eyebrow">02 / สำหรับผู้เล่น</p><h2 id="join-title" tabindex="-1">เข้าร่วมห้อง</h2><p>ห้องตัวอย่าง: <strong>240024</strong> · ห้องเต็ม: 111111 · ปิดแล้ว: 000000</p>
+<form id="join-form"><label>ชื่อเล่น<input id="nickname" maxlength="24" required autocomplete="nickname" placeholder="ชื่อที่เพื่อนจำได้"></label><label>รหัสห้อง 6 หลัก<input id="room-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="240024" aria-describedby="code-help"></label><p id="code-help" class="muted">วางรหัสได้ · ใช้ตัวเลข 0–9 จำนวน 6 หลัก</p><p id="join-error" role="alert"></p><button class="primary" id="join-submit">เข้าห้องจำลอง</button></form></section>
+<section id="lobby-panel" class="card" hidden aria-labelledby="lobby-title"><p class="eyebrow">03 / ห้องรอแข่งขัน</p><h2 id="lobby-title" tabindex="-1"></h2><p>รหัสห้อง <strong id="lobby-code" class="code"></strong></p><p id="lobby-rules" class="muted"></p><p id="connection" role="status"></p><ul id="players" class="players"></ul><p id="start-reason"></p><div class="actions"><button id="ready-button">พร้อมแข่งขัน</button><button id="start-button" class="primary">เริ่มสำหรับครู</button><button id="leave-button">ออกจากห้อง</button></div>
+<details><summary>เครื่องมือสาธิต · ข้อมูลจำลอง</summary><p>ใช้ลองสถานะหน้าจอ ไม่มีการเชื่อมต่อจริง</p><div class="actions"><button id="demo-ready">สลับความพร้อมของเพื่อน</button><button id="demo-connection">จำลองการเชื่อมต่อหลุด</button><button id="demo-start">จำลองครูเริ่มแข่งขัน</button></div></details></section>
+<section id="ranking-panel" class="card" hidden aria-labelledby="ranking-title"><p class="eyebrow">04 / ผลการแข่งขันจำลอง</p><h2 id="ranking-title" tabindex="-1">Ranking</h2><p id="ranking-description"></p><p class="muted">ลำดับตัวอย่าง: คะแนนมากก่อน → ตอบถูกมากก่อน → ใช้เวลาน้อยก่อน หากเท่ากันแสดงอันดับร่วม (ยังไม่ใช่กติกา Multiplayer จริง)</p><label>แสดงข้อมูล<select id="rank-filter"><option value="all">ผู้เล่นทั้งหมด</option><option value="me">เฉพาะฉัน</option></select></label><p id="ranking-status" role="status"></p><div id="rankings"></div><div class="actions"><button id="retry-ranking" hidden>ลองโหลดอีกครั้ง</button><button id="finish-button" class="primary">จำลองจบการแข่งขัน</button><button id="back-lobby">กลับห้องรอ</button><button id="ranking-leave">ออกจากห้อง</button></div><details><summary>เครื่องมือสาธิต · สถานะ Ranking</summary><div class="actions"><button data-rank-state="normal">ข้อมูลตัวอย่าง</button><button data-rank-state="loading">กำลังโหลด</button><button data-rank-state="empty">ไม่มีข้อมูล</button><button data-rank-state="error">โหลดไม่สำเร็จ</button></div><p class="muted">คะแนนตัวอย่างใช้ดูรูปแบบตารางเท่านั้น ไม่ได้คำนวณจากคำตอบ</p></details></section>
+<dialog id="leave-dialog" aria-labelledby="leave-title"><h2 id="leave-title">ออกจากห้องจำลอง?</h2><p>ข้อมูลห้องในรอบสาธิตนี้จะถูกล้าง</p><div class="actions"><button id="cancel-leave" autofocus>อยู่ในห้องต่อ</button><button id="confirm-leave" class="primary">ยืนยันออกจากห้อง</button></div></dialog>
+<footer>ฝึกคิดให้คล่อง แล้วมาลองแข่งกัน · Prototype ระยะแรก</footer>
+</main></body></html>
