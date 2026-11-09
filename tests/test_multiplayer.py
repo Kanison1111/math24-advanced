@@ -16,7 +16,9 @@ class MultiplayerTests(unittest.TestCase):
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
         cls.pw = sync_playwright().start()
-        cls.browser = cls.pw.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH', '/usr/bin/chromium'))
+        executable = os.environ.get('CHROMIUM_PATH')
+        cls.browser = cls.pw.chromium.launch(
+            **({'executable_path': executable} if executable else {}))
 
     @classmethod
     def tearDownClass(cls):
