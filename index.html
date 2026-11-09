@@ -1170,8 +1170,8 @@
       if (!competition?.active) return;
       if (puzzleStatus === 'active') {
         // เมื่อหมดเวลา/ยุติ: ข้อที่กำลังทำยังไม่ถือว่าข้ามด้วยตนเอง
-        puzzleStatus = 'finished';
         stoppedElapsedMs = elapsedMs();
+        puzzleStatus = 'finished';
       }
       competition.active = false;
       competition.ended = true;
