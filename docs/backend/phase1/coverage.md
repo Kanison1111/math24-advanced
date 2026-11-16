@@ -3,7 +3,7 @@
 ## สิ่งที่รันจริงใน cloud workspace นี้
 
 - Browser regression เดิม: **20 ผ่าน / 0 ไม่ผ่าน / 0 ข้าม** ครบ test_game, test_multiplayer และ test_next_question_ui บน Chromium
-- Offline harness safeguards: **14 ผ่าน / 0 ไม่ผ่าน / 0 ข้าม** ตรวจ guard container/project/image, escaping, unresolved contract, Secret/data scan, SQLSTATE และ transaction-scoped actor
+- Offline harness safeguards/regressions: **20 ผ่าน / 0 ไม่ผ่าน / 0 ข้าม** รวม safeguards เดิม 14 รายการ และ regression เพิ่ม 6 รายการสำหรับ fixed capacity: contract/metadata ไม่ต้องมี capacity column, ปฏิเสธค่าที่ไม่ใช่ 50, เตรียม race ตอนมี 49 คน, ตรวจจับการรับทั้งสองคนจนเกิน 50 และ cross-identity scenario ที่ไม่อ่าน capacity จาก room record
 - `bash -n` ตรวจ syntax export script และตรวจ Python syntax/link/whitespace ของไฟล์ที่เพิ่ม
 - ทดลองเรียก runner ด้วย contract ตัวอย่าง: **BLOCKED exit 2 ก่อนส่ง SQL** เพราะยังไม่ได้เติมและ review ไม่มีผล Backend pass
 
@@ -20,6 +20,8 @@
 - failed join attempts คงอยู่และเกิน quota แล้ว join ไม่ได้
 - creation burst และหลาย fresh fixture identities ตาม budget ที่ต้อง review
 - concurrent same-user join, แย่งที่ว่างสุดท้าย และ start พร้อมกันด้วย connections แยก
+
+Last-slot ใช้ขีดจำกัดคงที่ 50 คนตาม `math24_join_room` ที่ผู้ใช้ยืนยัน โดยเติมให้มี 49 สมาชิกก่อน race ไม่อ้างว่ามีคอลัมน์ `room_capacity` และไม่เปลี่ยน schema เพื่อทดสอบ Offline regression ใช้ metadata/member-list doubles เท่านั้น ไม่ได้รัน SQL หรือพิสูจน์ concurrency ของ RPC จริง
 
 SQL fixtures สร้างแถว users ทดสอบและตั้ง JWT claims ใน transaction เพื่อทดสอบ DB ไม่ใช่ HTTP JWT verification/Anonymous Auth signup จริง ชุดนี้ไม่มีการสร้างบัญชีบน dev
 

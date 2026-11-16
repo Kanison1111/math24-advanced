@@ -84,7 +84,9 @@ restore อยู่ใน transaction พร้อม timeout; psql meta comman
 
 คัดลอก `contract.example.json` ออกนอก Git เติมชื่อ columns และ **ทุก input argument ตาม signature ของจริง** พร้อม create settings ที่ถูกต้อง ไม่เติมชื่อจากการคาดเดา runner ตรวจชื่อ/ชนิด/overload กับ catalog ก่อนรัน กรณี overloaded/default args ให้ระบุ input ครบทุกตัว; ambiguous signature ถูก block
 
-`$room`, `$code`, `$ready`, `$nickname` เป็น substitution ของ fixture ข้อมูลอื่นเป็นค่าทดสอบที่ valid ตาม baseline ตั้ง capacity ขนาดเล็ก 5–12 คนสำหรับ abuse/last-slot tests และเลือก expected running state ตามของจริง `join_attempts_per_window=5`/`join_window_seconds=600` มาจาก Audit ส่วน `create_burst_max=3`/`cross_identity_join_max=3` เป็น **threshold เสนอเพื่อ review** ไม่ใช่สิ่งที่ยืนยันว่าติดตั้งแล้ว
+`$room`, `$code`, `$ready`, `$nickname` เป็น substitution ของ fixture ข้อมูลอื่นเป็นค่าทดสอบที่ valid ตาม baseline เลือก expected running state ตามของจริง `join_attempts_per_window=5`/`join_window_seconds=600` มาจาก Audit ส่วน `create_burst_max=3`/`cross_identity_join_max=3` เป็น **threshold เสนอเพื่อ review** ไม่ใช่สิ่งที่ยืนยันว่าติดตั้งแล้ว
+
+ความจุห้องเป็นค่าคงที่ **50 คนใน `math24_join_room`** ตามที่ผู้ใช้ยืนยัน ไม่ใช่คอลัมน์ใน `math24_rooms` ใช้ `expected.room_member_limit: 50` และไม่เพิ่ม capacity ใน column mapping หรือ create settings เพื่อทดสอบ runner ปฏิเสธค่าที่ต่างจากข้อจำกัดที่ยืนยันนี้ การทดสอบ last-slot นับสมาชิกที่มีอยู่แล้ว (รวม host ถ้าอยู่ใน membership) แล้วเติมผ่าน join RPC ให้มี 49 คน จากนั้นให้ identities ใหม่ 2 คนเข้าพร้อมกัน ต้องรับเพียงคนเดียวและลงท้ายที่ 50 คน การเตรียมนี้ใช้ fixture users เพิ่มประมาณ 50 คนใน Local เท่านั้น; ถ้า limiter ที่ได้รับการปรับปรุงปฏิเสธขั้นเตรียม ให้รายงาน failure และออกแบบ fixture ที่ได้รับอนุญาตแยก ห้ามลด capacity หรือปิด limiter เพื่อให้ผ่าน
 
 รัน `run_security.py` ตาม README เก็บผลผ่าน/ล้มเหลว/blocked จริง การแก้ contract ให้ threshold ใหญ่จน test ผ่านไม่ใช่การแก้ช่องโหว่ การทดสอบใช้เฉพาะ synthetic users/rooms ที่สร้างใน Local และ cleanup เฉพาะ UUID ของตัวเอง ไม่มี dev writes
 

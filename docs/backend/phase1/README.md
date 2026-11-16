@@ -5,6 +5,11 @@
 
 ข้อยืนยันล่าสุด: ทุกคนสร้างห้องตนเองได้; host คุมเฉพาะห้องตนเอง; dev เปิด Anonymous Sign-ins แต่ CAPTCHA ยังปิด ขั้นนี้ **ไม่ได้เปิด CAPTCHA/แก้ Auth Settings/เปลี่ยน dev database/สร้าง cloud project**
 
+ผู้ใช้ยืนยันเพิ่มเติมใน PR #12: `math24_rooms` ไม่มีคอลัมน์ capacity;
+`math24_join_room` จำกัดสมาชิกไว้ที่ 50 คนภายใน RPC จึงเก็บ
+`expected.room_member_limit: 50` เป็นข้อกำหนดของฟังก์ชัน ไม่ใช่ column mapping
+การทดสอบที่ว่างสุดท้ายจะเติมให้ครบ 49 สมาชิก แล้วให้ 2 identities แข่งขันเข้าที่ว่างเดียว
+
 ## ไฟล์ใหม่ทำอะไร
 
 | ไฟล์ | หน้าที่ |
@@ -20,6 +25,7 @@
 | `scripts/security/run_security.py` | ชุดทดสอบ DB 18 รายการ ด้วยหลาย fixture identities และหลาย connections |
 | `scripts/security/contract.example.json`, `review.example.json` | ช่องให้เติม signature/columns/ค่าจาก baseline จริง พร้อม SHA-256 และการยืนยัน review |
 | `tests/security/test_harness.py` | ทดสอบตัวป้องกันแบบ offline ไม่ใช่ทดสอบ Backend |
+| `tests/security/test_fixed_capacity.py` | regression แบบ offline สำหรับ metadata ที่ไม่มี capacity column และการเตรียมทดสอบที่ว่างสุดท้ายที่ 49/50 คน |
 
 ## รันอะไรได้ทันที
 

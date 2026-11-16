@@ -26,7 +26,7 @@ def validate_contract(contract):
         raise Blocked('Contract contains unresolved placeholders')
     if not re.fullmatch('[a-f0-9]{64}', contract.get('baseline_sha256', '')):
         raise Blocked('Contract needs the reviewed baseline SHA-256')
-    for name in ('room_id', 'room_owner', 'room_code', 'room_state', 'room_capacity', 'member_room',
+    for name in ('room_id', 'room_owner', 'room_code', 'room_state', 'member_room',
                  'member_user', 'member_ready', 'limit_user', 'limit_attempts'):
         ident(contract['columns'][name])
     for operation in ('create', 'join', 'ready', 'start', 'leave', 'member'):
@@ -37,6 +37,9 @@ def validate_contract(contract):
         for key in cfg['args']:
             ident(key)
     expected = contract['expected']
+    # Verified RPC behavior, not a rooms column or a configurable test capacity.
+    if type(expected.get('room_member_limit')) is not int or expected['room_member_limit'] != 50:
+        raise Blocked('The verified math24_join_room member limit must be 50')
     for key in ('join_attempts_per_window', 'join_window_seconds', 'create_burst_max', 'cross_identity_join_max'):
         if type(expected[key]) is not int or not 1 <= expected[key] <= 600:
             raise Blocked('Invalid or unbounded test budget')
@@ -52,7 +55,7 @@ def preflight(db, cfg):
     for table in TABLES:
         columns = db.rows('SELECT column_name FROM information_schema.columns WHERE table_schema=\'public\' AND table_name=' + literal(table))
         actual = {r['column_name'] for r in columns}
-        keys = {'math24_rooms': ['room_id', 'room_owner', 'room_code', 'room_state', 'room_capacity'],
+        keys = {'math24_rooms': ['room_id', 'room_owner', 'room_code', 'room_state'],
                 'math24_room_members': ['member_room', 'member_user', 'member_ready'],
                 'math24_join_limits': ['limit_user', 'limit_attempts']}[table]
         if not {cfg['columns'][k] for k in keys} <= actual:
@@ -284,7 +287,7 @@ class SecurityTests(unittest.TestCase):
     def test_new_identities_cannot_bypass_direct_rpc_abuse_budget(self):
         maximum = CONTRACT['expected']['cross_identity_join_max']
         before = len(self.members(self.a))
-        capacity = self.a[CONTRACT['columns']['room_capacity']]
+        capacity = CONTRACT['expected']['room_member_limit']
         self.assertGreaterEqual(capacity, before + maximum + 1, 'Fixture capacity would mask limiter behavior')
         for _ in range(maximum + 1):
             actor = self.user()
@@ -312,10 +315,14 @@ class SecurityTests(unittest.TestCase):
         self.assertEqual(len(rows), 1)
 
     def test_concurrent_last_slot_cannot_exceed_capacity(self):
-        capacity = self.a[CONTRACT['columns']['room_capacity']]
-        self.assertTrue(2 <= capacity <= 12, 'Use a small bounded capacity fixture (2..12)')
-        while len(self.members(self.a)) < capacity - 1:
+        capacity = CONTRACT['expected']['room_member_limit']
+        before = len(self.members(self.a))
+        self.assertLessEqual(before, capacity - 1, 'Fixture must leave a slot for the race')
+        # Count the host if already present, and fill to exactly 49 via real RPCs.
+        # Use fresh identities so the per-user join quota does not mask capacity.
+        for _ in range(capacity - 1 - before):
             self.join(self.user(), self.a)
+        self.assertEqual(len(self.members(self.a)), capacity - 1)
         actors = [self.user(), self.user()]
         self.parallel([lambda actor=actor: self.rpc('join', actor, code=self.code(self.a)) for actor in actors])
         rows = self.members(self.a)

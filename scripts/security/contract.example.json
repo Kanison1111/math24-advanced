@@ -5,7 +5,6 @@
     "room_id": "<rooms primary key>",
     "room_owner": "owner_id",
     "room_code": "code",
-    "room_capacity": "<capacity column from baseline>",
     "room_state": "<rooms state column>",
     "member_room": "<members room foreign key>",
     "member_user": "user_id",
@@ -54,6 +53,7 @@
     }
   },
   "expected": {
+    "room_member_limit": 50,
     "waiting_state": "waiting",
     "running_state": "<started state from baseline>",
     "join_attempts_per_window": 5,
