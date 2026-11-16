@@ -1,5 +1,13 @@
 # Math 24 Advanced
 
+## Multiplayer Online: อยู่ระหว่างพัฒนา
+
+หน้า `multiplayer/online.html` แยกจาก Demo เดิมและยังปิดการเชื่อมต่อจริงไว้
+มี Session/API/Reconnect และหน้าแข่งขันที่ทดสอบกับ Mock HTTP + Server engine แล้ว
+แต่การทดสอบ Supabase จริงยัง BLOCKED เพราะไม่มี baseline ที่ผ่าน review
+อ่าน [Milestones และสถานะ](docs/backend/milestones.md), [คู่มือหน้า Online](multiplayer/README.md)
+และ [รายการเปลี่ยนที่ต้องอนุมัติภายหลัง](docs/backend/online-change-plan.md)
+
 ## แผน Backend Multiplayer (ยังไม่เปิดออนไลน์)
 
 อ่าน [แผนเชื่อม Supabase และตรวจสิทธิ์](docs/backend/README.md) สำหรับ architecture,
