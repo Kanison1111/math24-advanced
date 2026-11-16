@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {issueCapability,verifyCapability,verifyTurnstile,budgets} from '../../server/protection.mjs';
-import {rpcRequest} from '../../server/room-contract.mjs';
+import {rpcRequest,capabilityParams} from '../../server/room-contract.mjs';
 import {createGateway} from '../../server/gateway.mjs';
 const key='offline-test-only-'.repeat(3), binding={actor:'actor-a',action:'join',params:{code:'000123',nickname:'a'},requestId:'request-a'};
 test('signed capability binds actor, operation, args, request id and expiry',()=>{
@@ -62,4 +62,27 @@ test('Supabase authenticator verifies users remotely and rejects server secrets 
   assert.throws(()=>supabaseAuthenticator('https://fixture.supabase.co','sb_secret_'+'not-real'),/publishable_key_required/);
   const reject=supabaseAuthenticator('https://fixture.supabase.co','sb_publishable_fixture',async()=>new Response('{}',{status:401}));
   assert.equal(await reject('not-a-valid-jwt'),null);
+});
+test('gateway supports an explicit function/API base path and rejects paths outside it',async()=>{
+  const gateway=createGateway({basePath:'/functions/v1/math24-online'});
+  const response=await gateway(new Request('https://fixture.invalid/functions/v1/math24-online/capabilities'));
+  assert.equal(response.status,200);assert.equal((await response.json()).ready,false);
+  assert.equal((await gateway(new Request('https://fixture.invalid/capabilities'))).status,404);
+});
+
+test('room capability binds normalized RPC args, including trimmed names and non-mixed zero counts',()=>{
+  const params={name:'  room  ',count:5,duration:10,mode:'basic',difficulty:'easy',ranking:'live',mix:[4,3,3]};
+  const bound=capabilityParams('create',params);
+  assert.equal(bound.rpc,'math24_create_room');assert.equal(bound.args.p_name,'room');
+  assert.deepEqual([bound.args.p_mix_easy,bound.args.p_mix_medium,bound.args.p_mix_hard],[0,0,0]);
+  assert.deepEqual(capabilityParams('join',{code:'000123',nickname:' peer '}),{rpc:'math24_join_room',args:{p_code:'000123',p_nickname:'peer'}});
+  assert.notDeepEqual(capabilityParams('start',{},'room-a'),capabilityParams('start',{},'room-b'));
+});
+test('legacy anon API-key compatibility still delegates user verification to Supabase Auth',async()=>{
+  const {supabaseAuthenticator}=await import('../../server/supabase-auth.mjs');
+  const token=role=>[Buffer.from('{"alg":"HS256"}').toString('base64url'),Buffer.from(JSON.stringify({role})).toString('base64url'),'fixture-signature'].join('.');
+  let verified=false;
+  const auth=supabaseAuthenticator('http://127.0.0.1:54321',token('anon'),async()=>{verified=true;return new Response('{}',{status:401});});
+  assert.equal(await auth('forged-user-token'),null);assert.equal(verified,true);
+  assert.throws(()=>supabaseAuthenticator('http://127.0.0.1:54321',token('service_role')),/publishable_key_required/);
 });

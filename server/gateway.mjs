@@ -1,6 +1,6 @@
 import {issueCapability,budgets,ProtectionError} from './protection.mjs';
 import {MatchError} from './match-engine.mjs';
-import {rpcRequest} from './room-contract.mjs';
+import {capabilityParams} from './room-contract.mjs';
 
 const uuid=/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i;
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json','cache-control':'no-store'}});
@@ -22,7 +22,7 @@ async function readLimited(request) {
 // Inject verified integrations. Without them the gateway advertises unavailable
 // and refuses mutations, rather than forwarding to unguarded dev RPCs.
 export function createGateway({auth,rooms,matches,limiter,challenge,capabilityKey,networkHash,
-  readiness=async()=>({ready:false,mode:'unavailable',blockers:BLOCKERS}),allowedOrigins=[],clock=Date.now}) {
+  readiness=async()=>({ready:false,mode:'unavailable',blockers:BLOCKERS}),allowedOrigins=[],clock=Date.now,basePath=''}) {
   return async function handle(request) {
     const origin=request.headers.get('origin');
     if(origin && !allowedOrigins.includes(origin)) return json({error:'origin_denied'},403);
@@ -36,7 +36,9 @@ export function createGateway({auth,rooms,matches,limiter,challenge,capabilityKe
       'access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':'authorization, content-type'}});
     try {
       const url=new URL(request.url), state=await readiness();
-      if(url.pathname==='/capabilities' && request.method==='GET')return respond(state);
+      if(basePath && !url.pathname.startsWith(basePath+'/'))return respond({error:'not_found'},404);
+      const path=url.pathname.slice(basePath.length);
+      if(path==='/capabilities' && request.method==='GET')return respond(state);
       if(!state.ready || !auth || !rooms || !matches || !limiter || !challenge || !networkHash || !capabilityKey)
         return respond({error:'online_unavailable',blockers:state.blockers??BLOCKERS},503);
       const bearer=request.headers.get('authorization');
@@ -45,7 +47,7 @@ export function createGateway({auth,rooms,matches,limiter,challenge,capabilityKe
       // Decoding a JWT payload without verification is never accepted here.
       const user=await auth(bearer.slice(7));
       if(!user?.id || !uuid.test(user.id))return respond({error:'session_required'},401);
-      const segments=url.pathname.split('/').filter(Boolean);
+      const segments=path.split('/').filter(Boolean);
       const action=segments[0];
       if(![...roomActions,'start','snapshot','answer','hint','next'].includes(action))return respond({error:'not_found'},404);
       const read=action==='snapshot';
@@ -65,8 +67,8 @@ export function createGateway({auth,rooms,matches,limiter,challenge,capabilityKe
       if(typeof body.requestId!=='string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(body.requestId))return respond({error:'invalid_request'},400);
       const {requestId,challengeToken,...params}=body;
       if(['create','join'].includes(action))await challenge(challengeToken,action);
-      if(roomActions.has(action) || action==='start')rpcRequest(action,params,roomId);
-      const proof=issueCapability(capabilityKey,{actor:user.id,action,params:{...params,...(roomId?{roomId}:{})},requestId},clock());
+      const boundParams=capabilityParams(action,params,roomId);
+      const proof=issueCapability(capabilityKey,{actor:user.id,action,params:boundParams,requestId},clock());
       if(roomActions.has(action))return respond(await rooms.mutate({action,actor:user.id,roomId,params,requestId,proof}));
       // The repository must consume/verify proof within the same DB transaction,
       // not just trust that the HTTP gateway already checked it.

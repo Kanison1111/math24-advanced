@@ -2,11 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {MatchService} from '../../server/match-service.mjs';
 import {issueCapability} from '../../server/protection.mjs';
+import {capabilityParams} from '../../server/room-contract.mjs';
 import {FakeRepository,TEST_KEY,HOST,PEER,OUTSIDER,ROOM} from './fake-repository.mjs';
 let seq=0;
 function setup(){let now=1000;const clock=()=>now;const repo=new FakeRepository(clock);return {repo,service:new MatchService(repo,clock),clock,setTime:n=>now=n};}
 function context(actor,action,params={},requestId=`request-${++seq}`){return {actor,action,params,roomId:ROOM,requestId,
-  proof:issueCapability(TEST_KEY,{actor,action,params:{...params,roomId:ROOM},requestId},1000)};}
+  proof:issueCapability(TEST_KEY,{actor,action,params:capabilityParams(action,params,ROOM),requestId},1000)};}
 test('only current host can start, and concurrent start retains one server deadline and queue',async()=>{
   const {repo,service}=setup();
   await assert.rejects(service.start(ROOM,PEER,context(PEER,'start')),/not_owner/);
@@ -49,4 +50,9 @@ test('proof for a different actor or operation cannot authorize a host command',
   const {service}=setup();
   await assert.rejects(service.start(ROOM,HOST,context(PEER,'start')),/authorization_required/);
   await assert.rejects(service.start(ROOM,HOST,context(HOST,'leave')),/authorization_required/);
+});
+test('a false boolean from the existing start RPC does not create a server match',async()=>{
+  const {repo,service}=setup();repo.rejectStart=true;
+  await assert.rejects(service.start(ROOM,HOST,context(HOST,'start')),/start_rejected/);
+  assert.equal(repo.records.get(ROOM).room.status,'waiting');assert.equal(repo.records.get(ROOM).match,null);
 });
