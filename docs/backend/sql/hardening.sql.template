@@ -1,0 +1,50 @@
+-- DESIGN TEMPLATE ONLY — intentionally NOT executable and NOT in supabase/migrations.
+-- Nothing here has been applied. <...> identifiers/signatures are unknown.
+-- No CREATE TABLE/FUNCTION is proposed: reuse all existing objects first.
+-- Never run this whole file in a SQL editor or through `supabase db push`.
+-- After inventory, select only proven necessary deltas into a NEW reviewed migration.
+-- Capture before-state and test compatibility/rollback in a disposable DB first.
+
+-- Candidate 1: excessive EXECUTE (only if audit finds it).
+-- Repeat for each discovered exposed RPC overload, preserving exact identity args.
+-- PUBLIC revoke alone does not remove direct grants to anon/inherited roles.
+BEGIN;
+REVOKE EXECUTE ON FUNCTION <schema>.<existing_rpc>(<identity_argument_types>) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION <schema>.<existing_rpc>(<identity_argument_types>) FROM anon;
+-- Only client-facing operations which explicitly check auth.uid()/ownership:
+GRANT EXECUTE ON FUNCTION <schema>.<existing_rpc>(<identity_argument_types>) TO authenticated;
+-- Helpers intended to be private: do NOT grant authenticated EXECUTE by default.
+-- Include other inherited/direct grantees identified in inventory when necessary.
+ROLLBACK; -- template never commits; real reviewed migration uses its own transaction
+
+-- Candidate 2: unsafe search_path (only after body/dependency review).
+-- Fully qualify all relation/function/type references FIRST. If a body correction
+-- is required, edit the exact existing function definition/signature in the real
+-- migration; do not invent a parallel RPC or blindly replace the return type.
+BEGIN;
+ALTER FUNCTION <schema>.<existing_rpc>(<identity_argument_types>) SET search_path = '';
+ROLLBACK;
+
+-- Candidate 3: unintended direct writes (only after checking existing consumers).
+-- Table privilege revokes may leave column-level grants; audit/revoke those too.
+BEGIN;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
+  ON TABLE <schema>.math24_rooms, <schema>.math24_room_members
+  FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE <schema>.math24_join_limits
+  FROM PUBLIC, anon, authenticated;
+ROLLBACK;
+
+-- Other possible deltas are deliberately NOT guessed:
+-- * Repair exact existing SELECT policies/views to scope owner/membership;
+--   never replace them with USING (true), and check OR-combined policies/recursion.
+-- * Add missing actor/state checks inside existing SECURITY DEFINER bodies.
+-- * Fix join limiter atomicity, persistence on denied results and bypass routes
+--   using math24_join_limits, after checking existing columns/constraints.
+-- * Repair locking/idempotency only where absent; preserve score/game rules.
+-- * Add existing rooms/members to Realtime publication only if absent and verified
+--   safe; do not publish limiter records or change REPLICA IDENTITY blindly.
+-- * Do not blanket-change default privileges for unrelated project functions.
+-- * Do not add indexes/constraints which already exist with equivalent coverage.
+-- Each real delta needs an observed finding, old/new behavior, relevant A/R/C/S
+-- tests and explicit rollback/operational review. If no finding, no migration.
