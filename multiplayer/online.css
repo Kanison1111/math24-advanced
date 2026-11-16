@@ -1,0 +1,14 @@
+fieldset {border:0;padding:0;margin:0;min-width:0}fieldset:disabled {opacity:.55}
+.notice p {margin-bottom:0}#feedback {overflow-wrap:anywhere;min-height:1.5em}
+.online-numbers {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}
+.online-numbers span {display:grid;place-items:center;border:1px solid #ccc;border-radius:12px;min-height:65px;font-size:30px;font-weight:750}
+.online-keypad {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin:16px 0}
+.online-keypad button {padding:5px;min-width:0;min-height:47px;font-size:18px}
+.wide {display:block;width:100%;margin-top:12px;min-height:52px}
+#answer {font-size:20px}#formula-help,#progress {color:#555;line-height:1.7}
+#rankings {padding-left:28px}#rankings li {margin:12px 0;overflow-wrap:anywhere}
+#challenge-box {margin:12px 0}#challenge-box:empty {display:none}
+[hidden] {display:none!important}button:disabled {cursor:not-allowed;opacity:.5}
+@media(max-width:400px){.online-keypad{gap:5px}.online-keypad button{font-size:17px}.online-numbers{gap:7px}}
+
+.card + .card {margin-top:16px}

@@ -23,7 +23,8 @@ export class MatchService {
         state=createMatch({roomId,hostId:room.hostId,members:room.members,settings:room.settings},now);
         // Must call existing math24_start_room in THIS transaction with the
         // verified actor and proof. Never commit start separately from match.
-        await tx.startRoom(); await tx.saveMatch(state);
+        if(await tx.startRoom()!==true)throw new MatchError('start_rejected');
+        await tx.saveMatch(state);
       }
       return snapshot(state,actor,now);
     });

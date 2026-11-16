@@ -22,3 +22,13 @@ export function rpcRequest(action,params,roomId) {
   return {name:{ready:'math24_set_ready',start:'math24_start_room',leave:'math24_leave_room'}[action],
     args:{p_room_id:roomId,...(action==='ready'?{p_ready:params.ready}:{})}};
 }
+
+// Sign exactly the normalized named arguments the existing RPC will receive.
+// The future DB guard compares payload.params.rpc/args as JSONB, not raw UI fields.
+export function capabilityParams(action,params,roomId) {
+  if(['create','join','ready','start','leave'].includes(action)) {
+    const rpc=rpcRequest(action,params,roomId);
+    return {rpc:rpc.name,args:rpc.args};
+  }
+  return {...params,roomId};
+}

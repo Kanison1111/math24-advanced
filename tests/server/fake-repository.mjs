@@ -1,6 +1,7 @@
 // OFFLINE TEST DOUBLE ONLY. No production database schema is constructed here.
 import {verifyCapability} from '../../server/protection.mjs';
 import {MatchError} from '../../server/match-engine.mjs';
+import {capabilityParams} from '../../server/room-contract.mjs';
 export const TEST_KEY='offline-only-capability-key-'.repeat(2);
 export const HOST='00000000-0000-4000-8000-000000000001';
 export const PEER='00000000-0000-4000-8000-000000000002';
@@ -24,10 +25,10 @@ export class FakeRepository {
       const result=await work({
         readRoom:async()=>record?.room,
         readMatch:async()=>record?.match,
-        startRoom:async()=>{record.room.status='started';},
+        startRoom:async()=>{if(this.rejectStart)return false;record.room.status='started';return true;},
         authorize:async context=>{
           const payload=verifyCapability(TEST_KEY,context.proof,{actor:context.actor,action:context.action,
-            params:{...context.params,roomId:context.roomId},requestId:context.requestId},this.clock());
+            params:capabilityParams(context.action,context.params,context.roomId),requestId:context.requestId},this.clock());
           if(record.nonces.includes(payload.nonce))throw new MatchError('proof_replayed');
           record.nonces.push(payload.nonce);
         },
