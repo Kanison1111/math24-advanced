@@ -1,0 +1,64 @@
+{
+  "reviewed": false,
+  "baseline_sha256": "<SHA-256 of reviewed schema-only export>",
+  "columns": {
+    "room_id": "<rooms primary key>",
+    "room_owner": "owner_id",
+    "room_code": "code",
+    "room_capacity": "<capacity column from baseline>",
+    "room_state": "<rooms state column>",
+    "member_room": "<members room foreign key>",
+    "member_user": "user_id",
+    "member_ready": "<members ready boolean>",
+    "limit_user": "user_id",
+    "limit_attempts": "<limiter attempt count>"
+  },
+  "rpc": {
+    "create": {
+      "name": "math24_create_room",
+      "args": {
+        "<exact argument name>": "<valid create settings from baseline>"
+      }
+    },
+    "join": {
+      "name": "math24_join_room",
+      "args": {
+        "<code argument>": "$code",
+        "<nickname argument if present>": "$nickname"
+      }
+    },
+    "ready": {
+      "name": "math24_set_ready",
+      "args": {
+        "<room argument>": "$room",
+        "<ready argument>": "$ready"
+      }
+    },
+    "start": {
+      "name": "math24_start_room",
+      "args": {
+        "<room argument>": "$room"
+      }
+    },
+    "leave": {
+      "name": "math24_leave_room",
+      "args": {
+        "<room argument>": "$room"
+      }
+    },
+    "member": {
+      "name": "math24_is_member",
+      "args": {
+        "<room argument>": "$room"
+      }
+    }
+  },
+  "expected": {
+    "waiting_state": "waiting",
+    "running_state": "<started state from baseline>",
+    "join_attempts_per_window": 5,
+    "join_window_seconds": 600,
+    "create_burst_max": 3,
+    "cross_identity_join_max": 3
+  }
+}
