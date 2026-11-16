@@ -15,3 +15,13 @@ Branch: `feat/multiplayer-baseline-readiness`
 ลองเตรียม Supabase CLI แล้ว: npm cache ปรับเข้า writable workspace ได้ แต่ CLI 3.1.0 เขียน config ลง home ที่อ่านอย่างเดียว และ CLI 2.75.0 download checksum ผ่าน Node ล้มเหลว DNS จึงไม่อ้างว่า Local Supabase เริ่มได้แล้ว ไม่ปิด TLS/checksum verification เพื่อแก้การติดตั้ง
 
 GitHub API ตอบ Forbidden แม้ git fetch/push ได้ จึงต้องรายงานการเปิด PR แยกจากการ push branch ตามผลจริง
+
+## M2 — Server-authoritative match engine and protection primitives
+
+Branch: `feat/multiplayer-match-engine` (stacked on M1)
+
+เพิ่ม server math rules ที่ generate จาก source เดิมและตรวจ drift, match engine ที่คิดคะแนน/เวลาฝั่ง server, atomic repository service contract, RPC argument mapper ตาม PR #12, Auth verification, Turnstile verification, signed capabilities และ uid/network/global limiter budgets
+
+ทดสอบ Node **33 ผ่าน** ครอบคลุม bank/parser, scoring boundaries, hint/skip, request replay/conflict, deadline, shared questions/ranking, concurrent duplicate submissions และ rollback ด้วย repository double อย่างชัดเจน ไม่มีผล Supabase RPC/RLS จริง
+
+[คู่มือ Server](../../server/README.md) ระบุ persistence/guard/limiter ที่ยัง BLOCKED และข้อจำกัดคลังโจทย์ 14 ชุดของบางโหมด ยังไม่มี database migration ที่ apply หรือ production repository fallback
