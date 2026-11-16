@@ -39,6 +39,16 @@ CHROMIUM_PATH=/usr/bin/chromium /workspace/.venvs/math24-test/bin/python -B -m u
 
 คำสั่งสุดท้ายใช้ virtual environment ของ cloud workspace ปัจจุบัน หากเป็นเครื่องใหม่ให้ติดตั้ง `requirements-test.txt` ตาม README หลัก แยกคำสั่ง test harness เพราะ `tests/security` ไม่ถูกรวมใน browser discovery เดิม
 
+## ข้อมูล RPC ที่ตรวจจาก Supabase จริง (อ่านอย่างเดียว)
+
+เมื่อ 16 พฤศจิกายน 2026 มีการตรวจ metadata ของ `math24-advanced-dev` ผ่าน read-only Supabase connector และรัน `scripts/security/catalog.sql` แบบอ่านข้อมูลสำเร็จ จึงเติมชื่อคอลัมน์, RPC signatures, parameter names และ setting ที่ถูกกติกาปัจจุบันลง `scripts/security/contract.example.json` แล้ว
+
+ตัวอย่างยัง **ไม่ได้รับการอนุมัติเป็น baseline**: `reviewed: false` และ `baseline_sha256` ยังเป็น placeholder ผู้ดูแลต้องตรวจว่าตรงกับ dump ฉบับที่ review และ restore สำเร็จ แล้วคัดลอกตัวอย่างไปไว้นอก Git ก่อนเปลี่ยน reviewed/hash เพื่อรันทดสอบ ห้ามใช้ค่าตัวอย่างนี้อ้างว่าผ่าน backend tests
+
+คำสั่ง RPC ที่ยืนยัน: `math24_create_room` (9 input arguments → jsonb), `math24_join_room` (2 → jsonb), `math24_set_ready` (2 → boolean), `math24_start_room` (1 → boolean), `math24_leave_room` (1 → boolean), `math24_is_member` (1 → boolean)
+
+การตั้งค่า `create_burst_max: 3` และ `cross_identity_join_max: 3` เป็น **security target ที่ยังไม่ได้ติดตั้งจริง**; tests เหล่านั้นคาดว่าจะล้มเหลวบน backend เดิมจนกว่าจะมีมาตรการที่ review และทดสอบแล้ว การรายงาน failure ต้องแยก **ช่องโหว่ตามเกณฑ์** ออกจาก **runner setup failure** ไม่แก้ expectation เพื่อให้ผ่านอย่างผิด ๆ
+
 ## เมื่อได้ baseline ที่ตรวจแล้ว
 
 ทำตาม [baseline.md](baseline.md) ให้ครบก่อน จากนั้น:
