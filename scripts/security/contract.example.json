@@ -1,0 +1,72 @@
+{
+  "reviewed": false,
+  "baseline_sha256": "<SHA-256 of independently reviewed schema-only export>",
+  "columns": {
+    "room_id": "id",
+    "room_owner": "owner_id",
+    "room_code": "code",
+    "room_state": "status",
+    "member_room": "room_id",
+    "member_user": "user_id",
+    "member_ready": "is_ready",
+    "limit_user": "user_id",
+    "limit_attempts": "attempts"
+  },
+  "rpc": {
+    "create": {
+      "name": "math24_create_room",
+      "args": {
+        "p_name": "security-fixture",
+        "p_question_count": 5,
+        "p_duration_minutes": 10,
+        "p_mode": "basic",
+        "p_difficulty": "easy",
+        "p_ranking_mode": "live",
+        "p_mix_easy": 0,
+        "p_mix_medium": 0,
+        "p_mix_hard": 0
+      }
+    },
+    "join": {
+      "name": "math24_join_room",
+      "args": {
+        "p_code": "$code",
+        "p_nickname": "$nickname"
+      }
+    },
+    "ready": {
+      "name": "math24_set_ready",
+      "args": {
+        "p_room_id": "$room",
+        "p_ready": "$ready"
+      }
+    },
+    "start": {
+      "name": "math24_start_room",
+      "args": {
+        "p_room_id": "$room"
+      }
+    },
+    "leave": {
+      "name": "math24_leave_room",
+      "args": {
+        "p_room_id": "$room"
+      }
+    },
+    "member": {
+      "name": "math24_is_member",
+      "args": {
+        "p_room_id": "$room"
+      }
+    }
+  },
+  "expected": {
+    "room_member_limit": 50,
+    "waiting_state": "waiting",
+    "running_state": "started",
+    "join_attempts_per_window": 5,
+    "join_window_seconds": 600,
+    "create_burst_max": 3,
+    "cross_identity_join_max": 3
+  }
+}
