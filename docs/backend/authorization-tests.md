@@ -2,9 +2,11 @@
 
 ## สภาพแวดล้อมและ actor
 
+ผลิตภัณฑ์ตัดสินใจแล้วว่า **ทุกคนสร้างห้องได้**; กรณีทดสอบต้องยืนยันว่า authenticated users (รวม anonymous sign-ins เมื่อเปิดจริง) สร้างห้องตนเองได้ แต่ไม่สามารถสวมเจ้าของห้องอื่นหรือแก้แถวห้องอื่นได้ การสมัครใหม่หลายตัวตนไม่ควรใช้เลี่ยง abuse limits
+
 รันเฉพาะ local/disposable database ที่มี schema export ผ่าน review และ seeded accounts ปลอม ไม่รันบน dev จริงหรือ production โดยอัตโนมัติ ห้าม `supabase db reset --linked`, `db push` หรือสร้างผู้ใช้ในโปรเจกต์จริงในขั้นออกแบบนี้
 
-Fixture: ครู T เจ้าของห้อง A, ผู้เล่น P1/P2 ใน A, ครู U และผู้เล่น Q ของห้อง B, ผู้เล่น G ที่ sign-in แบบ anonymous แต่ยังไม่อยู่ห้อง, N ไม่มี session เตรียม JWT จริงต่าง users ในระบบทดสอบ และมี P1 ที่ revoke membership ได้ ทุก actor ต้องต่าง uid ตรวจว่าไม่มี service-role token ใน client ทดสอบ
+Fixture: ผู้สร้างห้อง T เจ้าของห้อง A, ผู้เล่น P1/P2 ใน A, ผู้สร้างห้อง U และผู้เล่น Q ของห้อง B, ผู้เล่น G ที่ sign-in แบบ anonymous แต่ยังไม่อยู่ห้อง, N ไม่มี session เตรียม JWT จริงต่าง users ในระบบทดสอบ และมี P1 ที่ revoke membership ได้ ทุก actor ต้องต่าง uid ตรวจว่าไม่มี service-role token ใน client ทดสอบ
 
 วิธีทดสอบสองชั้น:
 
@@ -22,7 +24,7 @@ Fixture: ครู T เจ้าของห้อง A, ผู้เล่น 
 | A05 | P1 เปลี่ยน ready/role/user_id/room_id ของ P2/T | ไม่สำเร็จ ทุกแถวเป้าหมายเหมือนเดิม |
 | A06 | P1 set ready ตัวเองทั้ง true/false ใน waiting | สำเร็จเฉพาะแถวตัวเอง ไม่ย้ายห้อง/ยกสิทธิ์ |
 | A07 | Q/U เรียก ready/start/leave โดยระบุ A/uid P1 | ไม่สำเร็จ A ไม่เปลี่ยน |
-| A08 | P1/G สร้างห้องโดยปลอม owner/teacher/user_metadata | ไม่ได้สิทธิ์ครู; create เป็นไปตามนโยบายครูที่อนุมัติจริง |
+| A08 | P1/G สร้างห้องโดยปลอม owner/teacher/user_metadata | บัญชีที่ลงชื่อเข้าใช้สามารถสร้างห้องของตัวเองได้ แต่ owner_id ต้องตรงกับ auth.uid() เท่านั้น; ห้ามยึดห้องคนอื่นหรือข้าม server-side creation limits |
 | A09 | T start A ทุกคนพร้อม เทียบ P1/U start A | T สำเร็จครั้งเดียว คนอื่นไม่ได้ |
 | A10 | T start A ขณะมีสมาชิกไม่พร้อม/ห้องปิด/เริ่มแล้ว | transition ถูกกติกา ไม่มี start timestamp ใหม่จาก retry |
 | A11 | ทุก actor direct INSERT/UPDATE/DELETE ตารางและ join_limits | ปฏิเสธตาม RPC-only design ไม่มี reset limiter หรือเปลี่ยนคะแนน |
