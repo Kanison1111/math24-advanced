@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fafafa">
+  <meta name="theme-color" content="#f9f9f7">
   <title>Math 24 Advanced</title>
   <style>
     :root { color-scheme: light; }
@@ -240,6 +240,83 @@
       .score-detail, .reset-score { font-size: 10px; }
       .reset-score { padding: 7px 6px; }
     }
+
+    /* V1.0 UI refresh: อ้างอิงต้นแบบที่อนุมัติ โดยคงโครงสร้างและ logic เกมเดิม */
+    body { background: #f9f9f7; color: #181a1b; }
+    .page { max-width: 548px; padding: 30px 17px 78px; }
+    header { margin-bottom: 28px; }
+    header h1, .title-row h1 { font-size: clamp(27px, 6.4vw, 32px); }
+    header p { color: #606563; }
+    .singleplayer-label { margin: 0 0 13px; color: #666e6a; font-size: 12px; }
+    .game { padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+    .settings-row { gap: 12px; }
+    .setting { font-size: 12px; color: #4b5050; }
+    .setting select { min-height: 45px; font-size: 14px; border-color: #d5d8d4; }
+    .difficulty-note { font-size: 12px; color: #64686d; }
+    .score-board { margin: 22px 0 27px; padding: 14px 0;
+      background: transparent; border: 0; border-top: 1px solid #e3e5e1;
+      border-bottom: 1px solid #e3e5e1; border-radius: 0; }
+    .score-label { font-size: 12px; color: #626865; }
+    .score-value { font-size: 23px; }
+    .score-detail { font-size: 12px; }
+    .score-meta { margin-top: 12px; padding-top: 10px; }
+    .puzzle-caption { margin: 0 0 3px; text-align: center; color: #696e6a;
+      font-size: 13px; font-weight: 650; }
+    .target { margin: 0 0 19px; text-align: center; font-size: 29px;
+      font-weight: 850; letter-spacing: -.05em; line-height: 1.3; }
+    .numbers { gap: 10px; margin-bottom: 26px; }
+    .tile { min-height: 77px; background: #fff; border: 1px solid #dfe0dc;
+      border-radius: 14px; box-shadow: 0 3px 9px #00000005;
+      font-size: clamp(29px, 7vw, 35px); }
+    .answer-label { font-size: 14px; }
+    .formula-field { min-height: 65px; border-color: #afb4b0; }
+    .hint { font-size: 12px; color: #737a76; }
+    /* แป้นทั้งสองฝั่งใช้ระยะห่างตามต้นแบบที่อนุมัติ: 26px, มือถือเล็ก 18px */
+    .keypads { gap: 26px; margin-top: 21px; }
+    .ops-pad { border-left: 0; padding-left: 0; }
+    .pad-title { margin: 0 0 8px; color: #696d68; text-align: center;
+      font-size: 11px; font-weight: 750; }
+    .key { min-height: 49px; background: #fff; border-color: #e2e3df;
+      font-size: 19px; }
+    .key.utility { background: #e9ebe8; color: #3c403e; }
+    .actions, .actions[data-hints="off"] { margin-top: 25px; gap: 9px; }
+    .actions { grid-template-columns: 1.35fr 1fr 1fr; }
+    .actions[data-hints="off"] { grid-template-columns: 1.35fr 1fr; }
+    .actions[data-competition="on"] { grid-template-columns: 1.35fr 1fr; }
+    .actions[data-competition="on"][data-hints="off"] { grid-template-columns: 1fr; }
+    .action { min-width: 0; min-height: 49px; border-color: #daddd8;
+      background: #fff; font-size: 13px; }
+    .next-question { display: flex; align-items: center; justify-content: center;
+      gap: 9px; width: 100%; min-height: 57px; margin-top: 12px;
+      border: 1.5px solid #343737; border-radius: 12px; background: #fff;
+      color: #252727; font-size: 16px; font-weight: 750; }
+    .next-question span { font-size: 22px; line-height: 1; }
+    .next-question:hover { background: #edf0ec; }
+    .next-question:disabled { opacity: .5; cursor: not-allowed; }
+    #message { min-height: 31px; margin: 13px 0 0; padding: 5px 7px;
+      border: 0; background: transparent; color: #58625b; font-size: 13px; }
+    #message[data-status="error"] { border: 1px dashed #999; }
+    .multiplayer-zone { margin-top: 94px; }
+    .skip-dialog { max-width: min(420px, calc(100vw - 32px)); width: 100%; }
+    .skip-dialog-content { padding: 25px 21px 21px; }
+    .skip-dialog h2 { margin: 0 0 9px; font-size: 21px; line-height: 1.4; }
+    .skip-dialog p { margin: 0 0 18px; color: #5b605c;
+      font-size: 14px; line-height: 1.8; }
+    .skip-dialog-actions { display: grid; gap: 9px; }
+    .skip-dialog-actions button { min-height: 49px; border: 1px solid #d7dad5;
+      border-radius: 10px; color: #222; background: #fff; font-size: 14px; font-weight: 700; }
+    .skip-dialog-actions #skip-confirm { border-color: #202322;
+      color: #fff; background: #202322; }
+    @media (max-width: 400px) {
+      .page { padding: 22px 12px 70px; }
+      .game { padding: 0; border-radius: 0; }
+      .target { margin-top: 0; font-size: 27px; }
+      .tile { min-height: 68px; }
+      .keypads { gap: 18px; }
+      .ops-pad { padding-left: 0; }
+      .key { min-height: 47px; font-size: 19px; }
+      .multiplayer-zone { margin-top: 84px; }
+    }
   </style>
 </head>
 <body>
@@ -315,7 +392,8 @@
         <button class="reset-score" type="button" id="reset-round">เริ่มรอบใหม่</button>
       </div>
     </div>
-    <p class="target">ใช้เลขทั้ง 4 ตัวให้ได้ 24</p>
+    <p class="puzzle-caption">โจทย์ปัจจุบัน</p>
+    <p class="target">ทำให้ได้ 24</p>
     <div class="numbers" id="numbers" aria-label="ตัวเลขโจทย์"></div>
     <div class="answer-head">
       <label class="answer-label" for="answer">สูตรของคุณ</label>
@@ -329,6 +407,7 @@
     <p class="hint" id="entry-hint">พิมพ์ด้วยคีย์บอร์ด หรือกดปุ่มด้านล่างได้</p>
     <div class="keypads">
       <section class="pad" aria-label="แป้นตัวเลข">
+        <p class="pad-title">ตัวเลข</p>
         <div class="key-grid">
           <button type="button" class="key" data-insert="1">1</button>
           <button type="button" class="key" data-insert="2">2</button>
@@ -345,6 +424,7 @@
         </div>
       </section>
       <section class="pad ops-pad" aria-label="แป้นเครื่องหมาย">
+        <p class="pad-title">เครื่องหมาย</p>
         <div class="key-grid">
           <button type="button" class="key" data-insert="+">+</button>
           <button type="button" class="key" data-insert="-">−</button>
@@ -363,10 +443,10 @@
     </div>
     <div class="actions">
       <button type="button" class="action primary" id="check">ตรวจคำตอบ</button>
-      <button type="button" class="action" id="new">สุ่มโจทย์</button>
       <button type="button" class="action" id="solution">เฉลย</button>
       <button type="button" class="action hint-action" id="hint-button" aria-label="ขอคำใบ้">คำใบ้</button>
     </div>
+    <button type="button" class="next-question" id="new">ข้อถัดไป <span aria-hidden="true">→</span></button>
     <p id="message" aria-live="polite">พร้อมเล่นแล้ว!</p>
   </section>
   <section class="multiplayer-zone" aria-labelledby="multiplayer-zone-title">
@@ -378,6 +458,17 @@
     </a>
   </section>
 </main>
+
+<dialog class="rules-dialog skip-dialog" id="skip-confirm-dialog" aria-labelledby="skip-confirm-title" aria-describedby="skip-confirm-description">
+  <div class="skip-dialog-content">
+    <h2 id="skip-confirm-title">ข้ามไปข้อถัดไป?</h2>
+    <p id="skip-confirm-description">คุณยังไม่ได้ทำข้อนี้สำเร็จ หากข้ามจะไม่ได้คะแนนจากข้อนี้ และระบบจะนับว่าข้าม 1 ข้อ โดยไม่หักคะแนนสะสมเดิม</p>
+    <div class="skip-dialog-actions">
+      <button type="button" id="skip-cancel">กลับไปทำต่อ</button>
+      <button type="button" id="skip-confirm">ข้ามไปข้อถัดไป</button>
+    </div>
+  </div>
+</dialog>
 
 <dialog class="rules-dialog" id="rules-dialog" aria-labelledby="rules-title">
   <div class="rules-dialog-head">
@@ -713,9 +804,9 @@
       document.querySelector('.actions').dataset.competition = inContestView() ? 'on' : 'off';
       document.getElementById('solution').hidden = !!inContestView();
       document.getElementById('new').disabled = !!competition?.ended;
-      document.getElementById('new').textContent = active
-        ? (competition.completed >= 10 ? 'ดูผลการแข่งขัน' : (puzzleStatus === 'active' ? 'ข้ามข้อ' : 'ข้อต่อไป'))
-        : (competition?.ended ? 'จบแล้ว' : 'สุ่มโจทย์');
+      // ใช้ข้อความเดียวกันทุกโหมด; สถานะที่ยังทำไม่เสร็จจะมีหน้าต่างยืนยันก่อนข้าม
+      const nextButton = document.getElementById('new');
+      nextButton.innerHTML = (competition?.ended ? 'จบแล้ว' : 'ข้อถัดไป') + ' <span aria-hidden="true">→</span>';
       document.getElementById('reset-round').textContent = active ? 'ยุติการแข่งขัน' : 'เริ่มรอบใหม่';
       timerLabel.textContent = inContestView() ? 'เวลาเหลือ' : 'เวลาโจทย์นี้';
     }
@@ -1156,6 +1247,8 @@
     }
     function finishCompetition(reason='complete') {
       if (!competition?.active) return;
+      // หากหมดเวลาในขณะที่หน้าต่างยืนยันข้ามข้อเปิดอยู่ ให้ปิดก่อนแสดงผลแข่งขัน
+      document.getElementById('skip-confirm-dialog').close();
       if (puzzleStatus === 'active') {
         // เมื่อหมดเวลา/ยุติ: ข้อที่กำลังทำยังไม่ถือว่าข้ามด้วยตนเอง
         stoppedElapsedMs = elapsedMs();
@@ -1204,7 +1297,26 @@
     document.getElementById('exit-exponent').addEventListener('click', () => { input.blur(); exitPower(); });
     document.getElementById('equal').addEventListener('click', checkAnswer);
     document.getElementById('check').addEventListener('click', checkAnswer);
-    document.getElementById('new').addEventListener('click', newQuestion);
+    // ถ้ายังทำโจทย์ไม่เสร็จ ให้ยืนยันก่อนข้าม; ถ้าทำเสร็จแล้วไปต่อได้ทันที
+    const skipConfirmDialog = document.getElementById('skip-confirm-dialog');
+    const nextButton = document.getElementById('new');
+    nextButton.addEventListener('click', () => {
+      if (puzzleStatus === 'active' && !(competition?.active && contestTimeLeft() <= 0)) {
+        skipConfirmDialog.showModal();
+      } else {
+        newQuestion();
+      }
+    });
+    document.getElementById('skip-cancel').addEventListener('click', () => skipConfirmDialog.close());
+    document.getElementById('skip-confirm').addEventListener('click', () => {
+      skipConfirmDialog.close();
+      newQuestion();
+    });
+    skipConfirmDialog.addEventListener('click', event => {
+      const rect = skipConfirmDialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right ||
+          event.clientY < rect.top || event.clientY > rect.bottom) skipConfirmDialog.close();
+    });
     document.getElementById('solution').addEventListener('click', showSolution);
     field.addEventListener('click', e => {
       if (e.target.dataset.pos !== undefined) {
