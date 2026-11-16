@@ -1248,7 +1248,8 @@
     function finishCompetition(reason='complete') {
       if (!competition?.active) return;
       // หากหมดเวลาในขณะที่หน้าต่างยืนยันข้ามข้อเปิดอยู่ ให้ปิดก่อนแสดงผลแข่งขัน
-      document.getElementById('skip-confirm-dialog').close();
+      const skipDialog = document.getElementById('skip-confirm-dialog');
+      if (skipDialog.open) skipDialog.close();
       if (puzzleStatus === 'active') {
         // เมื่อหมดเวลา/ยุติ: ข้อที่กำลังทำยังไม่ถือว่าข้ามด้วยตนเอง
         stoppedElapsedMs = elapsedMs();
