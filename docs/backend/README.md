@@ -4,11 +4,19 @@
 วันที่ตรวจเอกสาร: 16 พฤศจิกายน 2026
 เริ่มจาก `main` commit `e932c86ef2c35c0ba8209406e7f2f45ee00efa2f`
 
+## ข้อตกลงที่ยืนยันแล้ว
+
+- **ทุกคนสามารถสร้างห้องแข่งขันได้** ไม่จำกัดเฉพาะครู ผู้สร้างห้องคือ **เจ้าของห้อง (host)** และมีสิทธิ์จัดการเฉพาะห้องของตัวเอง
+- ผู้เล่นและเจ้าของห้องยังต้องมี Supabase Auth session ที่ตรวจสอบได้ (เสนอ anonymous sign-in เพื่อลดขั้นตอนสมัครบัญชี) และต้องผ่านการป้องกันสร้างห้อง/เดารหัสถี่เกินไป
+- ไม่เพิ่มระบบตรวจคุณสมบัติครูหรือ teacher whitelist ในระยะแรก ข้อจำกัดนี้ไม่อนุญาตให้ข้าม RLS หรืออนุญาต direct table writes
+- ดู [ผลตรวจ dev แบบอ่านอย่างเดียว](dev-security-audit-2026-11-16.md) ประกอบแผนฉบับแรก เนื่องจากข้อมูลจริงบางส่วนได้รับการยืนยันหลังเขียนแผนเดิมแล้ว
+
 ## เริ่มอ่านตรงไหน
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| [dev-security-audit-2026-11-16.md](dev-security-audit-2026-11-16.md) | ผลตรวจ metadata และคำเตือน Supabase ของจริงแบบอ่านอย่างเดียว พร้อมงานที่ยังไม่ผ่าน |\n| [architecture.md](architecture.md) | เส้นทางข้อมูล Frontend → Auth/RPC → ฐานข้อมูล และวิธีรับ Realtime/reconnect |
+| [dev-security-audit-2026-11-16.md](dev-security-audit-2026-11-16.md) | ผลตรวจ metadata และคำเตือน Supabase ของจริงแบบอ่านอย่างเดียว พร้อมงานที่ยังไม่ผ่าน |
+| [architecture.md](architecture.md) | เส้นทางข้อมูล Frontend → Auth/RPC → ฐานข้อมูล และวิธีรับ Realtime/reconnect |
 | [security-review.md](security-review.md) | สิทธิ์แต่ละคน จุดเสี่ยง และเงื่อนไขก่อนเปิดออนไลน์ |
 | [authorization-tests.md](authorization-tests.md) | กรณีทดสอบสิทธิ์ การเดารหัส และการทำงานพร้อมกัน |
 | [sql/inventory.sql](sql/inventory.sql) | คำสั่งอ่าน metadata เพื่อระบุของเดิม ไม่อ่านข้อมูลผู้เล่น ไม่เปลี่ยน schema |
@@ -28,7 +36,7 @@
 ## ขั้นตอนถัดไป
 
 1. ผู้ดูแลที่มีสิทธิ์อ่าน metadata ตรวจ project ref ของ dev ให้ถูกต้อง แล้ว review/run `inventory.sql` ด้วยตนเอง ส่งเฉพาะโครงสร้างและ Advisor finding ที่ตัดข้อมูลอ่อนไหวแล้ว ไม่ส่ง secret ในแชตหรือ Git
-2. เติม mapping ของ RPC และตรวจ policies/function body เทียบ security matrix รวมถึงตัดสินใจวิธียืนยันครูจริง หากต้องจำกัดเฉพาะครู
+2. เติม mapping ของ RPC และตรวจ policies/function body เทียบ security matrix โดยใช้ข้อตกลงทุกคนสร้างห้องได้และตรวจว่าเจ้าของห้องจริงเป็นผู้เริ่มห้อง
 3. แปลงเฉพาะช่องโหว่ที่พบเป็น migration จริง ใช้ชื่อ/signature เดิม ไม่สร้างชุดตารางหรือ RPC ใหม่คู่ขนาน ตรวจ dependencies ก่อนแก้ grants/search_path
 4. ทดสอบ schema ที่ตรวจแล้วในฐานข้อมูล local/disposable ที่ได้รับอนุญาต แยกจาก `math24-advanced-dev`; ห้าม reset/push/link dev เพื่อทดสอบโดยอัตโนมัติ
 5. เมื่อสิทธิ์และการจำกัดคำขอผ่าน จึงพัฒนา adapter เชื่อม UI ห้องรอ ทดสอบสอง browser sessions และ reconnect
