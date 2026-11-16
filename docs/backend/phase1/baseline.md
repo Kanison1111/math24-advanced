@@ -82,7 +82,7 @@ restore อยู่ใน transaction พร้อม timeout; psql meta comman
 
 ## 5. เติม contract แล้วทดสอบ
 
-คัดลอก `contract.example.json` ออกนอก Git เติมชื่อ columns และ **ทุก input argument ตาม signature ของจริง** พร้อม create settings ที่ถูกต้อง ไม่เติมชื่อจากการคาดเดา runner ตรวจชื่อ/ชนิด/overload กับ catalog ก่อนรัน กรณี overloaded/default args ให้ระบุ input ครบทุกตัว; ambiguous signature ถูก block
+คัดลอก `contract.example.json` ที่เติม mapping จาก metadata จริงไว้แล้วออกนอก Git (เป็น **ค่าตัวอย่างยังไม่ reviewed**) เติมชื่อ columns และ **ทุก input argument ตาม signature ของจริง** พร้อม create settings ที่ถูกต้อง ไม่เติมชื่อจากการคาดเดา runner ตรวจชื่อ/ชนิด/overload กับ catalog ก่อนรัน กรณี overloaded/default args ให้ระบุ input ครบทุกตัว; ambiguous signature ถูก block
 
 `$room`, `$code`, `$ready`, `$nickname` เป็น substitution ของ fixture ข้อมูลอื่นเป็นค่าทดสอบที่ valid ตาม baseline เลือก expected running state ตามของจริง `join_attempts_per_window=5`/`join_window_seconds=600` มาจาก Audit ส่วน `create_burst_max=3`/`cross_identity_join_max=3` เป็น **threshold เสนอเพื่อ review** ไม่ใช่สิ่งที่ยืนยันว่าติดตั้งแล้ว
 
