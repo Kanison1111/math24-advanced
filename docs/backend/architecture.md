@@ -18,13 +18,15 @@
 
 เลือกและ pin เวอร์ชัน Supabase JS SDK ในงาน implementation หลังตรวจ compatibility ปัจจุบันยังไม่ได้ติดตั้ง dependency ใหม่ GitHub Pages รองรับ static client ได้ แต่ server/gateway ต้องอยู่ต่างระบบที่ได้รับอนุมัติ ไม่สมมติว่า GitHub Pages รัน backend ให้
 
-## ตัวตนและครู
+## ตัวตนและเจ้าของห้อง
 
 ผู้ยังไม่ sign in คือ database role `anon`; ผู้เล่น `signInAnonymously()` แล้วเป็น `authenticated` และมี `auth.uid()` เช่นผู้ใช้ทั่วไป จึงห้ามใช้เพียง `TO authenticated` เป็นหลักฐานว่าเป็นครู
 
-ข้อเสนอ: ผู้เล่นใช้ anonymous sign-in หลังผ่าน CAPTCHA; ครูใช้บัญชีถาวร (OTP/magic link หรือ provider ที่ตรวจพบ) พร้อมการอนุมัติครูที่ดูแลโดย server ถ้าสินค้าตั้งใจให้ใครก็สร้างห้องได้ ให้เรียกคนนี้ว่า “เจ้าของห้อง” ไม่อ้างว่าได้ยืนยันอาชีพครู การตัดสินใจนี้เป็น gate ก่อนอนุญาต create จริง การมีบัญชีถาวรอย่างเดียวไม่ยืนยันว่าเป็นครู
+**ข้อตกลงผลิตภัณฑ์ที่ยืนยันแล้ว:** ทุกคนสร้างห้องได้ ไม่ต้องเป็นครูที่ผ่านการอนุมัติ ผู้สร้างห้องเรียกว่า **เจ้าของห้อง (host)** ไม่ใช่ครูที่ได้รับการรับรอง ปัจจุบัน `public.math24_create_room` ผูก `owner_id` กับ `auth.uid()` ตามผลตรวจฐานข้อมูลแบบอ่านอย่างเดียว จึงรองรับหลักการนี้อยู่แล้ว แต่ต้องตรวจ Auth/abuse และผลคำขอจริงก่อนเปิดใช้
 
-ห้ามใช้ `user_metadata`, nickname, localStorage `host=true`, request `role` หรือ user UUID ที่ client ส่งมาเป็นแหล่งสิทธิ์ ครู/เจ้าของห้องอ่านจากฐานข้อมูลที่แก้ได้โดยทางที่เชื่อถือได้เท่านั้น ทุก RPC ต้องผูกผู้กระทำกับ `auth.uid()`; การเปลี่ยน device/ล้าง storage ของ anonymous user ทำให้เสีย identity เดิม ห้ามกู้สิทธิ์ครูหรือผู้เล่นจากชื่อเล่น/รหัสห้อง
+ข้อเสนอการใช้งาน: ผู้มาใหม่ใช้ anonymous sign-in โดยไม่ต้องกรอกอีเมลหรือรหัสผ่าน ภายใต้การตั้งค่า Auth/CAPTCHA ที่ได้รับการตรวจสอบจริง และอาจอนุญาตบัญชีถาวรตามระบบที่มี ห้ามเปิด endpoint สร้างห้องให้ผู้ไร้ session; สิทธิ์ host ผูกกับตัวตนผู้สร้างในฐานข้อมูลและใช้ได้เฉพาะห้องตัวเอง ต้องมี server-side rate limits สำหรับสร้างห้องและ join (ไม่พึ่งปิดปุ่มหรือ per-uid limiter เพียงอย่างเดียว) ห้ามเพิ่ม teacher whitelist โดยพลการ
+
+ห้ามใช้ `user_metadata`, nickname, localStorage `host=true`, request `role` หรือ user UUID ที่ client ส่งมาเป็นแหล่งสิทธิ์ เจ้าของห้องอ่านจากฐานข้อมูลที่แก้ได้โดยทางที่เชื่อถือได้เท่านั้น ทุก RPC ต้องผูกผู้กระทำกับ `auth.uid()`; การเปลี่ยน device/ล้าง storage ของ anonymous user ทำให้เสีย identity เดิม ห้ามกู้สิทธิ์เจ้าของห้องหรือผู้เล่นจากชื่อเล่น/รหัสห้อง
 
 ## Mapping ที่ต้องเติมจาก inventory — ไม่ใช่ชื่อ API จริง
 
@@ -34,7 +36,7 @@
 | เข้าห้อง | RPC join | validate code 6 digits, limit ก่อน lookup, ห้องรอ/ยังมีที่, membership ไม่ซ้ำ, actor=self |
 | ออกจากห้อง | RPC leave | ออกได้เฉพาะตัวเอง, repeated leave ไม่เสียข้อมูลคนอื่น; owner leave ทำตามพฤติกรรมเดิมที่ audit ยืนยัน |
 | กดพร้อม | RPC ready | สมาชิกห้องรอเปลี่ยนได้เฉพาะ ready ของตัวเอง; เสนอ set boolean แทน toggle สำหรับ retry |
-| ครูเริ่ม | RPC start | owner จริง, สมาชิกพร้อม, state ยัง waiting, start/deadline มาจาก server, เริ่มซ้ำได้ผลรอบเดิม |
+| เจ้าของห้องเริ่ม | RPC start | owner จริง, สมาชิกพร้อม, state ยัง waiting, start/deadline มาจาก server, เริ่มซ้ำได้ผลรอบเดิม |
 | โหลดห้องรอ | SELECT ที่ RLS อนุญาต หรือ read RPC เดิมถ้ามี | เฉพาะเจ้าของ/สมาชิก; columns เท่าที่จำเป็น ไม่มี secret/เฉลย/limit records |
 
 ต้องบันทึกชื่อเต็ม schema, `pg_get_function_identity_arguments`, named parameters, return type/JSON shape, errors และ idempotency ให้ครบก่อนเขียน adapter ห้ามเดาชื่อ `create_room()` แล้วสร้างใหม่เพราะหาไม่เจอ
