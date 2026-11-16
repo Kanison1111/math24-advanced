@@ -8,7 +8,7 @@
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| [architecture.md](architecture.md) | เส้นทางข้อมูล Frontend → Auth/RPC → ฐานข้อมูล และวิธีรับ Realtime/reconnect |
+| [dev-security-audit-2026-11-16.md](dev-security-audit-2026-11-16.md) | ผลตรวจ metadata และคำเตือน Supabase ของจริงแบบอ่านอย่างเดียว พร้อมงานที่ยังไม่ผ่าน |\n| [architecture.md](architecture.md) | เส้นทางข้อมูล Frontend → Auth/RPC → ฐานข้อมูล และวิธีรับ Realtime/reconnect |
 | [security-review.md](security-review.md) | สิทธิ์แต่ละคน จุดเสี่ยง และเงื่อนไขก่อนเปิดออนไลน์ |
 | [authorization-tests.md](authorization-tests.md) | กรณีทดสอบสิทธิ์ การเดารหัส และการทำงานพร้อมกัน |
 | [sql/inventory.sql](sql/inventory.sql) | คำสั่งอ่าน metadata เพื่อระบุของเดิม ไม่อ่านข้อมูลผู้เล่น ไม่เปลี่ยน schema |
