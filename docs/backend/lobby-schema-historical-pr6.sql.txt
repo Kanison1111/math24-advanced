@@ -1,0 +1,246 @@
+-- HISTORICAL SOURCE REFERENCE ONLY — DO NOT RUN AGAINST EXISTING DEV DATABASE.\n-- Retrieved from PR #6 commit af50cb0; math24 RPC bodies verified equal to live definitions after format normalization (2026-11-17).\n-- This SQL is NOT an independently restored pg_dump and does not include auth.users row data or external RLS event trigger.\n\n-- Math 24 Advanced — lobby backend foundation (not yet wired to the frontend).
+-- Apply only to a test Supabase project first. Requires Supabase Auth anonymous sign-ins.
+-- Rooms/participants are private to members. Mutations only through validated RPCs.
+-- This phase does NOT implement secure puzzle delivery, scoring, or realtime.
+
+create table if not exists public.math24_rooms (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique check (code ~ '^[0-9]{6}$'),
+  name text not null check (char_length(btrim(name)) between 1 and 60),
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  question_count integer not null check (question_count in (5, 10, 15, 20)),
+  duration_minutes integer not null check (duration_minutes between 1 and 120),
+  mode text not null check (mode in ('basic', 'advanced')),
+  difficulty text not null check (difficulty in ('easy', 'medium', 'hard', 'mixed')),
+  mix_easy integer not null default 0 check (mix_easy between 0 and 20),
+  mix_medium integer not null default 0 check (mix_medium between 0 and 20),
+  mix_hard integer not null default 0 check (mix_hard between 0 and 20),
+  ranking_mode text not null check (ranking_mode in ('live', 'final')),
+  status text not null default 'waiting' check (status in ('waiting', 'started', 'finished')),
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null default (now() + interval '24 hours'),
+  started_at timestamptz,
+  constraint math24_mix_valid check (
+    (difficulty = 'mixed' and mix_easy + mix_medium + mix_hard = question_count)
+    or (difficulty <> 'mixed' and mix_easy = 0 and mix_medium = 0 and mix_hard = 0)
+  )
+);
+
+create table if not exists public.math24_room_members (
+  room_id uuid not null references public.math24_rooms(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  nickname text not null check (char_length(btrim(nickname)) between 1 and 24),
+  role text not null check (role in ('host', 'player')),
+  is_ready boolean not null default false,
+  joined_at timestamptz not null default now(),
+  primary key (room_id, user_id)
+);
+create index if not exists math24_room_members_user_idx
+  on public.math24_room_members (user_id);
+
+-- Per-identity join-attempt throttling. Must also use CAPTCHA/provider rate limits
+-- against attackers who repeatedly create fresh anonymous identities.
+create table if not exists public.math24_join_limits (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  window_started timestamptz not null default now(),
+  attempts integer not null default 0 check (attempts >= 0)
+);
+
+alter table public.math24_rooms enable row level security;
+alter table public.math24_room_members enable row level security;
+alter table public.math24_join_limits enable row level security;
+
+-- Prevent direct client writes; authenticated users may read only via RLS.
+revoke all on table public.math24_rooms, public.math24_room_members, public.math24_join_limits
+  from public, anon, authenticated;
+grant select on table public.math24_rooms, public.math24_room_members to authenticated;
+
+-- A SECURITY DEFINER membership helper avoids recursively querying the members table
+-- through its own RLS policy. An authenticated user can only test their OWN membership.
+create or replace function public.math24_is_member(p_room_id uuid)
+returns boolean language sql stable security definer set search_path = ''
+as $$
+  select (select auth.uid()) is not null and exists (
+    select 1 from public.math24_room_members
+    where room_id = p_room_id and user_id = (select auth.uid())
+  );
+$$;
+revoke execute on function public.math24_is_member(uuid) from public, anon, authenticated;
+grant execute on function public.math24_is_member(uuid) to authenticated;
+
+drop policy if exists math24_room_read on public.math24_rooms;
+create policy math24_room_read on public.math24_rooms
+  for select to authenticated
+  using (public.math24_is_member(id));
+
+drop policy if exists math24_member_read on public.math24_room_members;
+create policy math24_member_read on public.math24_room_members
+  for select to authenticated
+  using (public.math24_is_member(room_id));
+
+-- No INSERT/UPDATE/DELETE policies. Privileged RPCs below enforce authorization.
+create or replace function public.math24_create_room(
+  p_name text, p_question_count integer, p_duration_minutes integer,
+  p_mode text, p_difficulty text, p_ranking_mode text,
+  p_mix_easy integer default 0, p_mix_medium integer default 0, p_mix_hard integer default 0
+) returns jsonb
+language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_code text;
+  v_room uuid;
+  v_tries integer;
+begin
+  if v_user is null then return pg_catalog.jsonb_build_object('ok', false, 'error', 'auth_required'); end if;
+  if p_name is null or pg_catalog.char_length(pg_catalog.btrim(p_name)) not between 1 and 60
+    or p_question_count not in (5,10,15,20)
+    or p_duration_minutes not between 1 and 120
+    or p_mode not in ('basic','advanced')
+    or p_difficulty not in ('easy','medium','hard','mixed')
+    or p_ranking_mode not in ('live','final')
+    or p_mix_easy is null or p_mix_medium is null or p_mix_hard is null
+    or p_mix_easy not between 0 and 20 or p_mix_medium not between 0 and 20
+    or p_mix_hard not between 0 and 20
+    or (p_difficulty = 'mixed' and p_mix_easy+p_mix_medium+p_mix_hard <> p_question_count)
+    or (p_difficulty <> 'mixed' and (p_mix_easy <> 0 or p_mix_medium <> 0 or p_mix_hard <> 0))
+  then return pg_catalog.jsonb_build_object('ok', false, 'error', 'invalid_settings'); end if;
+
+  -- Six-digit invite codes are convenience identifiers, not passwords.
+  -- Account-level throttling mitigates guessing; deploy CAPTCHA/edge rate limits too.
+  for v_tries in 1..20 loop
+    v_code := pg_catalog.lpad(pg_catalog.floor(pg_catalog.random() * 1000000)::integer::text, 6, '0');
+    insert into public.math24_rooms
+      (code, name, owner_id, question_count, duration_minutes, mode, difficulty,
+       ranking_mode, mix_easy, mix_medium, mix_hard)
+    values
+      (v_code, pg_catalog.btrim(p_name), v_user, p_question_count, p_duration_minutes,
+       p_mode, p_difficulty, p_ranking_mode, p_mix_easy, p_mix_medium, p_mix_hard)
+    on conflict (code) do nothing
+    returning id into v_room;
+    exit when v_room is not null;
+  end loop;
+  if v_room is null then
+    return pg_catalog.jsonb_build_object('ok', false, 'error', 'code_unavailable');
+  end if;
+  insert into public.math24_room_members(room_id, user_id, nickname, role, is_ready)
+  values (v_room, v_user, 'เจ้าของห้อง', 'host', true);
+  return pg_catalog.jsonb_build_object('ok', true, 'room_id', v_room, 'code', v_code);
+end;
+$$;
+
+create or replace function public.math24_join_room(p_code text, p_nickname text)
+returns jsonb language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_room public.math24_rooms%rowtype;
+  v_attempts integer;
+begin
+  if v_user is null then return pg_catalog.jsonb_build_object('ok', false, 'error', 'auth_required'); end if;
+  if p_code is null or p_code !~ '^[0-9]{6}$'
+    or p_nickname is null or pg_catalog.char_length(pg_catalog.btrim(p_nickname)) not between 1 and 24
+  then return pg_catalog.jsonb_build_object('ok', false, 'error', 'invalid_input'); end if;
+
+  insert into public.math24_join_limits (user_id, window_started, attempts)
+    values (v_user, now(), 1)
+  on conflict (user_id) do update set
+    attempts = case when public.math24_join_limits.window_started < now() - interval '10 minutes'
+      then 1 else public.math24_join_limits.attempts + 1 end,
+    window_started = case when public.math24_join_limits.window_started < now() - interval '10 minutes'
+      then now() else public.math24_join_limits.window_started end
+  returning attempts into v_attempts;
+  if v_attempts > 5 then
+    return pg_catalog.jsonb_build_object('ok', false, 'error', 'rate_limited');
+  end if;
+
+  select * into v_room from public.math24_rooms
+    where code = p_code and status = 'waiting' and expires_at > now()
+    for update;
+  if not found then
+    return pg_catalog.jsonb_build_object('ok', false, 'error', 'room_unavailable');
+  end if;
+  if (select count(*) from public.math24_room_members where room_id = v_room.id) >= 50
+    and not exists (select 1 from public.math24_room_members where room_id = v_room.id and user_id = v_user)
+  then return pg_catalog.jsonb_build_object('ok', false, 'error', 'room_full'); end if;
+
+  insert into public.math24_room_members(room_id, user_id, nickname, role, is_ready)
+    values (v_room.id, v_user, pg_catalog.btrim(p_nickname), 'player', false)
+    on conflict (room_id, user_id) do update set
+      nickname = case when public.math24_room_members.role = 'host'
+        then public.math24_room_members.nickname else excluded.nickname end;
+  return pg_catalog.jsonb_build_object('ok', true, 'room_id', v_room.id);
+end;
+$$;
+
+create or replace function public.math24_set_ready(p_room_id uuid, p_ready boolean)
+returns boolean language plpgsql security definer set search_path = ''
+as $$
+declare v_count integer;
+begin
+  if auth.uid() is null or p_ready is null then return false; end if;
+  update public.math24_room_members m set is_ready = p_ready
+  where m.room_id = p_room_id and m.user_id = auth.uid()
+    and m.role = 'player'
+    and exists (select 1 from public.math24_rooms r
+      where r.id = m.room_id and r.status = 'waiting' and r.expires_at > now());
+  get diagnostics v_count = row_count;
+  return v_count = 1;
+end;
+$$;
+
+create or replace function public.math24_start_room(p_room_id uuid)
+returns boolean language plpgsql security definer set search_path = ''
+as $$
+declare v_count integer;
+begin
+  if auth.uid() is null then return false; end if;
+  update public.math24_rooms r set status='started', started_at=now()
+  where r.id=p_room_id and r.owner_id=auth.uid() and r.status='waiting'
+    and r.expires_at > now()
+    and (select count(*) from public.math24_room_members m
+      where m.room_id=r.id) >= 2
+    and not exists (select 1 from public.math24_room_members m
+      where m.room_id=r.id and not m.is_ready);
+  get diagnostics v_count = row_count;
+  return v_count = 1;
+end;
+$$;
+
+create or replace function public.math24_leave_room(p_room_id uuid)
+returns boolean language plpgsql security definer set search_path = ''
+as $$
+declare v_role text;
+begin
+  if auth.uid() is null then return false; end if;
+  select role into v_role from public.math24_room_members
+    where room_id = p_room_id and user_id = auth.uid();
+  if v_role is null then return false; end if;
+  if v_role = 'host' then
+    -- The owner closing the lobby deletes it and its members.
+    delete from public.math24_rooms where id = p_room_id and owner_id = auth.uid();
+  else
+    delete from public.math24_room_members where room_id = p_room_id and user_id = auth.uid();
+  end if;
+  return true;
+end;
+$$;
+
+-- Explicitly prevent unauthenticated RPC invocation; not a substitute for
+-- function-level authorization checks above.
+revoke execute on function public.math24_create_room(text,integer,integer,text,text,text,integer,integer,integer)
+  from public, anon, authenticated;
+revoke execute on function public.math24_join_room(text,text)
+  from public, anon, authenticated;
+revoke execute on function public.math24_set_ready(uuid,boolean)
+  from public, anon, authenticated;
+revoke execute on function public.math24_start_room(uuid)
+  from public, anon, authenticated;
+revoke execute on function public.math24_leave_room(uuid)
+  from public, anon, authenticated;
+grant execute on function public.math24_create_room(text,integer,integer,text,text,text,integer,integer,integer)
+  to authenticated;
+grant execute on function public.math24_join_room(text,text) to authenticated;
+grant execute on function public.math24_set_ready(uuid,boolean) to authenticated;
+grant execute on function public.math24_start_room(uuid) to authenticated;
+grant execute on function public.math24_leave_room(uuid) to authenticated;
