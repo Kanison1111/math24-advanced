@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from local_db import Blocked, LocalDB, SqlError
 from review_baseline import findings, without_dollar_bodies
+from baseline_metadata import validate_metadata
 
 
 def validate_restore_text(text):
@@ -21,13 +22,17 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--baseline', type=Path, required=True)
     p.add_argument('--review', type=Path, required=True)
+    p.add_argument('--dependencies', type=Path, required=True)
     args = p.parse_args()
     raw = args.baseline.read_bytes()
     digest = hashlib.sha256(raw).hexdigest()
+    metadata_raw = args.dependencies.read_bytes()
+    metadata_digest = hashlib.sha256(metadata_raw).hexdigest()
+    validate_metadata(json.loads(metadata_raw))
     review = json.loads(args.review.read_text())
-    if review.get('reviewed') is not True or review.get('sha256') != digest:
+    if review.get('reviewed') is not True or review.get('sha256') != digest or review.get('metadata_sha256') != metadata_digest:
         raise Blocked('Missing manual approval for this exact baseline hash')
-    if findings(raw.decode()):
+    if findings(raw.decode()) or findings(metadata_raw.decode()):
         raise Blocked('Baseline has review flags; do not automatically restore or commit it')
     db = LocalDB()
     db.preflight_auth()
@@ -39,8 +44,8 @@ def main():
     text = raw.decode()
     validate_restore_text(text)
     db.execute(text + "\nCREATE SCHEMA math24_security_harness;"
-               "CREATE TABLE math24_security_harness.baseline (sha256 text NOT NULL, verified boolean NOT NULL DEFAULT false);"
-               "INSERT INTO math24_security_harness.baseline (sha256) VALUES ('" + digest + "')")
+               "CREATE TABLE math24_security_harness.baseline (sha256 text NOT NULL, metadata_sha256 text NOT NULL, verified boolean NOT NULL DEFAULT false);"
+               "INSERT INTO math24_security_harness.baseline (sha256, metadata_sha256) VALUES ('" + digest + "','" + metadata_digest + "')")
     db.preflight_auth()
     print('Reviewed baseline restored locally; marker SHA-256:', digest)
     print('This proves restore only, not RPC/RLS correctness. Run the security suite next.')
@@ -49,5 +54,5 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (Blocked, SqlError, OSError, ValueError) as e:
+    except (Blocked, SqlError, OSError, ValueError, TypeError, KeyError) as e:
         raise SystemExit('BLOCKED: ' + str(e))
