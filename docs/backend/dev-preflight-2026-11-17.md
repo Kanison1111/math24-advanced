@@ -15,6 +15,14 @@
 - ตรวจแบบ `BEGIN READ ONLY` + `SET LOCAL ROLE authenticated` + JWT claims ใน transaction: ตัวตนที่เลือกจากสมาชิกเดิมเห็น 1 ห้องและสมาชิก 2 รายการ; ตัวตน UUID ใหม่ที่ไม่ได้เป็นสมาชิกเห็น 0 ห้องและ 0 สมาชิก
 - การทดสอบ JWT claims ข้างต้นเป็น **การจำลองสิทธิ์ใน SQL session** ไม่ได้พิสูจน์ HTTP JWT/Auth API, การแก้ไขข้อมูล, RPC mutation หรือการแยกห้องทุกกรณี
 
+## พบไฟล์โครงสร้างเดิมจาก PR #6 (ตรวจเพิ่ม)
+
+ค้นพบแหล่ง SQL ต้นฉบับ: [PR #6 commit af50cb0](https://github.com/Kanison1111/math24-advanced/blob/af50cb0b978651c6e6cdbeb0d154668dedfd59c0/supabase/migrations/202611150001_lobby_foundation.sql) และเก็บสำเนา [lobby-schema-historical-pr6.sql.txt](lobby-schema-historical-pr6.sql.txt) ไว้นอกโฟลเดอร์ `supabase/migrations` เพื่อป้องกันการรันอัตโนมัติ
+
+เทียบเนื้อหา body ของ `math24_*` ทั้ง **6 ฟังก์ชัน** จาก PR #6 กับ `pg_get_functiondef` ใน dev แล้ว **ตรงกันหลังตัดความต่างของ whitespace, comment และ dollar quoting** นี่ช่วยให้มี SQL ต้นฉบับสำหรับตรวจและทำแผน rollback แต่ **ยังไม่ใช่ logical backup และยังไม่ผ่าน independent restore** รวมทั้งไม่รวม `auth.users` และ `ensure_rls` event trigger ที่มีอยู่ใน dev
+
+ผู้ดูแลยืนยันว่า **ไม่มี Database Backup ใน Supabase Dashboard** ในวันที่ตรวจ จึงยังไม่ apply schema changes กับ dev เพื่อไม่ให้ข้อมูลหายโดยไม่มี recovery plan ที่ทดสอบได้
+
 ## ข้อจำกัดและสิ่งที่ต้องยืนยันก่อน Database Migration
 
 1. **Backup/recovery gate:** เครื่องมือที่เชื่อมต่ออยู่ไม่มี API อ่านรายการ Database Backups จึงยังยืนยันไม่ได้ว่ามี backup หรือสามารถกู้คืนได้จริง ตรวจสถานะใน Supabase Dashboard → **Database → Backups** และใช้วิธีสำรองที่เหมาะกับแพ็กเกจ; [เอกสาร Supabase](https://supabase.com/docs/guides/platform/backups) ระบุว่า automated daily backup มีใน Pro/Team/Enterprise ส่วน Free ควรทำ logical backup เป็นประจำ
