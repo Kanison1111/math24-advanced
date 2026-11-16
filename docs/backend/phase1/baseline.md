@@ -36,7 +36,7 @@ scanner flag รูปแบบ Secret/JWT/private key/URL ที่มีรห
 
 **scanner ไม่ใช่หลักฐานว่าไม่มีข้อมูลอ่อนไหวทั้งหมด** ผู้ดูแลต้องอ่าน function literals/defaults/comments/ACLs/ข้อมูลระบุตัวบุคคลและ endpoints ทั้งสองไฟล์ ถ้าพบ secret อย่านำไฟล์เข้า Git และจัดการตามขั้นตอนของผู้ดูแล; อย่า redaction โค้ดให้ semantics ต่างแล้วอ้างว่าทดสอบ baseline เดิม
 
-คัดลอก `review.example.json` ออกไปนอก Git เติม `sha256` ของ SQL ที่ตรวจแล้วและ `reviewed: true` ด้วยตนเอง ขณะนี้ PR นี้ไม่มี baseline, manifest ที่อนุมัติ หรือ credential ที่ commit มีเพียง template
+คัดลอก `review.example.json` ออกไปนอก Git เติม `sha256` ของ SQL, `metadata_sha256` ของ dependencies.json ที่ตรวจแล้วและ `reviewed: true` ด้วยตนเอง ขณะนี้ PR นี้ไม่มี baseline, manifest ที่อนุมัติ หรือ credential ที่ commit มีเพียง template
 
 ## 3. สร้าง Local Supabase เฉพาะงาน
 
@@ -65,7 +65,8 @@ supabase start
 ```sh
 python3 -B scripts/security/restore_baseline.py \
   --baseline /tmp/math24-security-export/public.schema.sql \
-  --review /tmp/math24-security-export/review.json
+  --review /tmp/math24-security-export/review.json \
+  --dependencies /tmp/math24-security-export/dependencies.json
 python3 -B scripts/security/verify_restore.py \
   --dependencies /tmp/math24-security-export/dependencies.json
 ```
@@ -91,3 +92,5 @@ restore อยู่ใน transaction พร้อม timeout; psql meta comman
 รัน `run_security.py` ตาม README เก็บผลผ่าน/ล้มเหลว/blocked จริง การแก้ contract ให้ threshold ใหญ่จน test ผ่านไม่ใช่การแก้ช่องโหว่ การทดสอบใช้เฉพาะ synthetic users/rooms ที่สร้างใน Local และ cleanup เฉพาะ UUID ของตัวเอง ไม่มี dev writes
 
 **รอบนี้ยังทำขั้น export/restore/metadata comparison/DB tests ไม่ได้จริง** เพราะไม่มี baseline หรือการเชื่อม source ที่ได้รับมา จึงไม่มีหลักฐานว่าฐานข้อมูลเดิมสร้างซ้ำและทดสอบผ่านแล้ว
+
+Verifier ต้องได้รับ metadata ครบทุกหมวดและ RPC ทั้งหกตัว; `{}` หรือ catalog บางส่วนใช้ยืนยันไม่ได้ หากตรวจครั้งใหม่ล้มเหลว marker verified เดิมจะถูกล้าง และ metadata ที่ตรวจต้องมี hash ตรงกับ bundle ที่ได้รับ review ตอน restore
