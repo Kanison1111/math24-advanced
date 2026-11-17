@@ -1170,15 +1170,32 @@
             const mark = document.createElement('span');
             mark.className = 'log-mark';
             mark.textContent = 'log';
-            // ฐานหนึ่งหลักจากการ์ด ย้ายไปเป็นตัวห้อย: 2log(8) => log₂(8)
-            const previous = [...target.children].reverse()
-              .find(node => node.classList.contains('formula-text') &&
+            // ย้ายฐานไปเป็นตัวห้อย ทั้งเลขหนึ่งหลักและฐานในวงเล็บ
+            // เช่น 2log(8) => log₂(8), (1/2)log(4) => log₍₁÷₂₎(4)
+            let baseStart = -1;
+            if (/^\d$/.test(str[i-1] || '')) baseStart = i-1;
+            else if (str[i-1] === ')') {
+              let depth = 0;
+              for (let k = i-1; k >= begin; k--) {
+                if (str[k] === ')') depth++;
+                else if (str[k] === '(' && --depth === 0) {
+                  baseStart = k; break;
+                }
+              }
+            }
+            if (baseStart >= 0) {
+              const children = [...target.children];
+              const from = children.findIndex(node =>
+                node.classList.contains('formula-text') &&
+                Number(node.dataset.pos) === baseStart);
+              const to = children.findIndex(node =>
+                node.classList.contains('formula-text') &&
                 Number(node.dataset.pos) === i-1);
-            if (previous && /^\d$/.test(previous.textContent)) {
-              const sub = document.createElement('sub');
-              previous.remove();
-              sub.appendChild(previous);
-              mark.appendChild(sub);
+              if (from >= 0 && to >= from) {
+                const sub = document.createElement('sub');
+                for (const node of children.slice(from, to+1)) sub.appendChild(node);
+                mark.appendChild(sub);
+              }
             }
             target.appendChild(mark);
             i += 3;

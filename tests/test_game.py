@@ -179,6 +179,47 @@ class GameTests(unittest.TestCase):
         for cards, numerator, denominator in found:
             self.assertEqual([numerator, denominator], ['24','1'])
 
+    def test_fractional_log_base_is_displayed_as_subscript(self):
+        self.page.set_viewport_size({'width': 360, 'height': 780})
+        self.js("modeSelect.value='advanced'; modeSelect.dispatchEvent(new Event('change'))")
+        self.js("input.value='(1/2)log(4)+3'; setCursor(input.value.length)")
+        self.assertEqual(self.page.locator('#answer').input_value(), '(1/2)log(4)+3')
+        self.assertEqual(self.page.locator('.log-mark sub').inner_text(), '(1÷2)')
+        self.assertFalse(self.js('document.documentElement.scrollWidth > innerWidth'))
+        self.assertEqual(self.js("String(calculateAnswer(input.value,[1,2,4,3],'advanced').n)"), '1')
+
+    def test_touch_log_and_exponent_on_mobile_viewport(self):
+        context = self.browser.new_context(
+            viewport={'width':390,'height':844}, is_mobile=True,
+            has_touch=True, device_scale_factor=2)
+        try:
+            page = context.new_page()
+            errors = []
+            page.on('pageerror', lambda error: errors.append(str(error)))
+            page.goto(f'http://127.0.0.1:{self.server.server_port}/')
+            page.locator('#mode').select_option('advanced')
+            page.evaluate("""() => {
+                current = {nums:[2,8,3,3], difficulty:'medium',
+                    solution:'2log(8)^3-3', special:'log'};
+                puzzleStatus = 'active'; startedAt = Date.now(); renderScore();
+            }""")
+            for selector in [
+                '[data-insert="2"]', '#log-key', '[data-insert="8"]',
+                '#exit-exponent', '#power-key', '[data-insert="3"]',
+                '#exit-exponent', '[data-insert="-"]', '[data-insert="3"]'
+            ]:
+                page.locator(selector).tap()
+            self.assertEqual(page.locator('#answer').input_value(), '2log(8)^(3)-3')
+            self.assertEqual(page.locator('.log-mark sub').inner_text(), '2')
+            self.assertEqual(page.locator('.sup-group').inner_text(), '3')
+            self.assertFalse(page.evaluate('document.documentElement.scrollWidth > innerWidth'))
+            page.locator('#equal').tap()
+            self.assertEqual(page.evaluate('puzzleStatus'), 'solved')
+            self.assertGreater(page.evaluate('stats.score'), 0)
+            self.assertEqual(errors, [])
+        finally:
+            context.close()
+
     def test_score_boundaries(self):
         for difficulty, base in [('easy',10),('medium',20),('hard',30)]:
             for duration, bonus in [(0,10),(30000,10),(30001,5),(60000,5),(60001,0)]:
