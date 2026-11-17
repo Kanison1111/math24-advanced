@@ -4,6 +4,14 @@
 วันที่ตรวจเอกสาร: 16 พฤศจิกายน 2026
 เริ่มจาก `main` commit `e932c86ef2c35c0ba8209406e7f2f45ee00efa2f`
 
+## สถานะล่าสุดของงาน M1–M3
+
+ดู [Milestones และผลทดสอบ](milestones.md), [คู่มือหน้า Online](../../multiplayer/README.md)
+และ [รายการที่ต้องปลดล็อกก่อนใช้งานจริง](online-change-plan.md)
+ปัจจุบันมี Server engine และหน้า Online ที่ผ่าน Mock/Offline integration แล้ว
+แต่ Supabase RPC/RLS/restore จริงยัง BLOCKED ข้อความแผนฉบับแรกด้านล่างเป็นบันทึกก่อนเริ่ม implementation;
+RPC mappings ที่ตรวจเพิ่มอยู่ใน Phase 1 โดยยังไม่ใช่ baseline ที่ผ่าน review
+
 ## Phase 1: ชุดทดสอบและ schema baseline
 
 ดู [คู่มือ Phase 1](phase1/README.md) สำหรับเครื่องมือ export แบบอ่านอย่างเดียว,
