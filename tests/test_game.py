@@ -109,6 +109,76 @@ class GameTests(unittest.TestCase):
                 self.assertIsInstance(error, str)
                 self.assertTrue(error)
 
+
+    def test_exact_log_and_power(self):
+        cases = [
+            ('2log(8)^3-3', [2,8,3,3], '24', '1'),
+            ('6^3/(1+8)', [6,3,1,8], '24', '1'),
+            ('4log(2)+1+3', [4,2,1,3], '9', '2'),
+            ('(1/2)log(4)+3', [1,2,4,3], '1', '1'),
+            ('2log(1)+3+4', [2,1,3,4], '7', '1'),
+            ('4log(2)^2+3', [4,2,2,3], '13', '4'),
+        ]
+        for expr, cards, numerator, denominator in cases:
+            with self.subTest(expr=expr):
+                got = self.page.evaluate(
+                    '([e,c]) => {const v=calculateAnswer(e,c,"advanced");return [String(v.n),String(v.d)]}',
+                    [expr,cards])
+                self.assertEqual(got, [numerator, denominator])
+
+        invalid = [
+            ('2log(8)^3-3', [2,8,3,3], 'basic'),
+            ('1log(8)+2+3', [1,8,2,3], 'advanced'),
+            ('0log(8)+2+3', [0,8,2,3], 'advanced'),
+            ('(-2)log(8)+3+3', [-2,8,3,3], 'advanced'),
+            ('2log(0)+3+3', [2,0,3,3], 'advanced'),
+            ('2log((-3))+3+3', [2,-3,3,3], 'advanced'),
+            ('2log(3)+4+5', [2,3,4,5], 'advanced'),
+            ('2log(8)log(3)+3', [2,8,3,3], 'advanced'),
+            ('2log(8)^5-3', [2,8,5,3], 'advanced'),
+        ]
+        for expr, cards, mode in invalid:
+            with self.subTest(invalid=expr, mode=mode):
+                error = self.page.evaluate(
+                    '([e,c,m]) => {try {calculateAnswer(e,c,m);return null} catch(x) {return x.message}}',
+                    [expr,cards,mode])
+                self.assertTrue(error)
+
+    def test_log_keypad_entry_and_clear(self):
+        self.assertTrue(self.page.locator('#log-key').is_disabled())
+        self.js("modeSelect.value='advanced'; modeSelect.dispatchEvent(new Event('change'))")
+        self.assertFalse(self.page.locator('#log-key').is_disabled())
+        self.page.locator('[data-insert="2"]').click()
+        self.page.locator('#log-key').click()
+        self.assertEqual(self.page.locator('#answer').input_value(), '2log()')
+        self.page.locator('[data-insert="8"]').click()
+        self.page.locator('#exit-exponent').click()
+        self.page.locator('#power-key').click()
+        self.page.locator('[data-insert="3"]').click()
+        self.page.locator('#exit-exponent').click()
+        self.page.locator('[data-insert="-"]').click()
+        self.page.locator('[data-insert="3"]').click()
+        self.assertEqual(self.page.locator('#answer').input_value(), '2log(8)^(3)-3')
+        self.assertEqual(self.page.locator('.log-mark sub').inner_text(), '2')
+        got = self.page.evaluate(
+            "() => {const v=calculateAnswer(input.value,[2,8,3,3],'advanced');return String(v.n)}")
+        self.assertEqual(got, '24')
+        self.page.locator('#clear').click()
+        self.assertEqual(self.page.locator('#answer').input_value(), '')
+        self.page.locator('[data-insert="2"]').click()
+        self.page.locator('#log-key').click()
+        self.page.locator('#backspace').click()
+        self.assertEqual(self.page.locator('#answer').input_value(), '2')
+
+    def test_log_puzzle_bank_solutions(self):
+        self.js("modeSelect.value='advanced'")
+        found = self.page.evaluate("""() => puzzleBank.advanced.medium.filter(p=>p.special==='log')
+            .map(p => {const value=calculateAnswer(p.solution,p.nums,'advanced');
+                return [p.nums, String(value.n), String(value.d)];})""")
+        self.assertTrue(found)
+        for cards, numerator, denominator in found:
+            self.assertEqual([numerator, denominator], ['24','1'])
+
     def test_score_boundaries(self):
         for difficulty, base in [('easy',10),('medium',20),('hard',30)]:
             for duration, bonus in [(0,10),(30000,10),(30001,5),(60000,5),(60001,0)]:
