@@ -1,0 +1,594 @@
+{
+  "tables": [
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=Dxtm/postgres"
+      ],
+      "rls": true,
+      "name": "math24_join_limits",
+      "owner": "postgres",
+      "force_rls": false,
+      "replica_identity": "d"
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=Dxtm/postgres",
+        "authenticated=r/postgres"
+      ],
+      "rls": true,
+      "name": "math24_room_members",
+      "owner": "postgres",
+      "force_rls": false,
+      "replica_identity": "d"
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=Dxtm/postgres",
+        "authenticated=r/postgres"
+      ],
+      "rls": true,
+      "name": "math24_rooms",
+      "owner": "postgres",
+      "force_rls": false,
+      "replica_identity": "d"
+    }
+  ],
+  "columns": [
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "math24_join_limits",
+      "udt_schema": "pg_catalog",
+      "column_name": "user_id",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "math24_join_limits",
+      "udt_schema": "pg_catalog",
+      "column_name": "window_started",
+      "is_nullable": "NO",
+      "column_default": "now()",
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "math24_join_limits",
+      "udt_schema": "pg_catalog",
+      "column_name": "attempts",
+      "is_nullable": "NO",
+      "column_default": "0",
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "math24_room_members",
+      "udt_schema": "pg_catalog",
+      "column_name": "room_id",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "math24_room_members",
+      "udt_schema": "pg_catalog",
+      "column_name": "user_id",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_room_members",
+      "udt_schema": "pg_catalog",
+      "column_name": "nickname",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_room_members",
+      "udt_schema": "pg_catalog",
+      "column_name": "role",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "bool",
+      "data_type": "boolean",
+      "table_name": "math24_room_members",
+      "udt_schema": "pg_catalog",
+      "column_name": "is_ready",
+      "is_nullable": "NO",
+      "column_default": "false",
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "math24_room_members",
+      "udt_schema": "pg_catalog",
+      "column_name": "joined_at",
+      "is_nullable": "NO",
+      "column_default": "now()",
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "code",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "name",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "owner_id",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "question_count",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "duration_minutes",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "mode",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "difficulty",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 8
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "mix_easy",
+      "is_nullable": "NO",
+      "column_default": "0",
+      "ordinal_position": 9
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "mix_medium",
+      "is_nullable": "NO",
+      "column_default": "0",
+      "ordinal_position": 10
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "mix_hard",
+      "is_nullable": "NO",
+      "column_default": "0",
+      "ordinal_position": 11
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "ranking_mode",
+      "is_nullable": "NO",
+      "column_default": null,
+      "ordinal_position": 12
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "status",
+      "is_nullable": "NO",
+      "column_default": "'waiting'::text",
+      "ordinal_position": 13
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "created_at",
+      "is_nullable": "NO",
+      "column_default": "now()",
+      "ordinal_position": 14
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "expires_at",
+      "is_nullable": "NO",
+      "column_default": "(now() + '24:00:00'::interval)",
+      "ordinal_position": 15
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "math24_rooms",
+      "udt_schema": "pg_catalog",
+      "column_name": "started_at",
+      "is_nullable": "YES",
+      "column_default": null,
+      "ordinal_position": 16
+    }
+  ],
+  "indexes": [
+    {
+      "name": "math24_join_limits_pkey",
+      "table": "math24_join_limits",
+      "definition": "CREATE UNIQUE INDEX math24_join_limits_pkey ON public.math24_join_limits USING btree (user_id)"
+    },
+    {
+      "name": "math24_room_members_pkey",
+      "table": "math24_room_members",
+      "definition": "CREATE UNIQUE INDEX math24_room_members_pkey ON public.math24_room_members USING btree (room_id, user_id)"
+    },
+    {
+      "name": "math24_room_members_user_idx",
+      "table": "math24_room_members",
+      "definition": "CREATE INDEX math24_room_members_user_idx ON public.math24_room_members USING btree (user_id)"
+    },
+    {
+      "name": "math24_rooms_code_key",
+      "table": "math24_rooms",
+      "definition": "CREATE UNIQUE INDEX math24_rooms_code_key ON public.math24_rooms USING btree (code)"
+    },
+    {
+      "name": "math24_rooms_pkey",
+      "table": "math24_rooms",
+      "definition": "CREATE UNIQUE INDEX math24_rooms_pkey ON public.math24_rooms USING btree (id)"
+    }
+  ],
+  "policies": [
+    {
+      "cmd": "SELECT",
+      "qual": "math24_is_member(room_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "math24_room_members",
+      "permissive": "PERMISSIVE",
+      "policyname": "math24_member_read",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "math24_is_member(id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "math24_rooms",
+      "permissive": "PERMISSIVE",
+      "policyname": "math24_room_read",
+      "with_check": null
+    }
+  ],
+  "functions": [
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "authenticated=X/postgres"
+      ],
+      "name": "math24_create_room",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_name text, p_question_count integer, p_duration_minutes integer, p_mode text, p_difficulty text, p_ranking_mode text, p_mix_easy integer, p_mix_medium integer, p_mix_hard integer",
+      "body_hash": "35d2daa42fbfa5d00b69374140df375b",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "authenticated=X/postgres"
+      ],
+      "name": "math24_is_member",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_room_id uuid",
+      "body_hash": "d3efb578cd17ac0de6c5bfcd86cc8871",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "authenticated=X/postgres"
+      ],
+      "name": "math24_join_room",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_code text, p_nickname text",
+      "body_hash": "35d10b3f869daa88632e9d96f276cd5b",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "authenticated=X/postgres"
+      ],
+      "name": "math24_leave_room",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_room_id uuid",
+      "body_hash": "5c30fb04910a711e994a5370ecd172cf",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "authenticated=X/postgres"
+      ],
+      "name": "math24_set_ready",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_room_id uuid, p_ready boolean",
+      "body_hash": "53d93f07613c760a38de40883ed2a28c",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "authenticated=X/postgres"
+      ],
+      "name": "math24_start_room",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_room_id uuid",
+      "body_hash": "bb2e4e98d34a6bc9927f23ce305fec30",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "name": "rls_auto_enable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "body_hash": "846ec2fbff751d24b890656d63c3a9bf",
+      "security_definer": true
+    }
+  ],
+  "extensions": [
+    {
+      "name": "pg_stat_statements",
+      "schema": "extensions"
+    },
+    {
+      "name": "pgcrypto",
+      "schema": "extensions"
+    },
+    {
+      "name": "plpgsql",
+      "schema": "pg_catalog"
+    },
+    {
+      "name": "supabase_vault",
+      "schema": "vault"
+    },
+    {
+      "name": "uuid-ossp",
+      "schema": "extensions"
+    }
+  ],
+  "constraints": [
+    {
+      "name": "math24_join_limits_attempts_check",
+      "table": "math24_join_limits",
+      "definition": "CHECK (attempts >= 0)"
+    },
+    {
+      "name": "math24_join_limits_pkey",
+      "table": "math24_join_limits",
+      "definition": "PRIMARY KEY (user_id)"
+    },
+    {
+      "name": "math24_join_limits_user_id_fkey",
+      "table": "math24_join_limits",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "math24_room_members_nickname_check",
+      "table": "math24_room_members",
+      "definition": "CHECK (char_length(btrim(nickname)) >= 1 AND char_length(btrim(nickname)) <= 24)"
+    },
+    {
+      "name": "math24_room_members_pkey",
+      "table": "math24_room_members",
+      "definition": "PRIMARY KEY (room_id, user_id)"
+    },
+    {
+      "name": "math24_room_members_role_check",
+      "table": "math24_room_members",
+      "definition": "CHECK (role = ANY (ARRAY['host'::text, 'player'::text]))"
+    },
+    {
+      "name": "math24_room_members_room_id_fkey",
+      "table": "math24_room_members",
+      "definition": "FOREIGN KEY (room_id) REFERENCES math24_rooms(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "math24_room_members_user_id_fkey",
+      "table": "math24_room_members",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "math24_mix_valid",
+      "table": "math24_rooms",
+      "definition": "CHECK (difficulty = 'mixed'::text AND (mix_easy + mix_medium + mix_hard) = question_count OR difficulty <> 'mixed'::text AND mix_easy = 0 AND mix_medium = 0 AND mix_hard = 0)"
+    },
+    {
+      "name": "math24_rooms_code_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (code ~ '^[0-9]{6}$'::text)"
+    },
+    {
+      "name": "math24_rooms_code_key",
+      "table": "math24_rooms",
+      "definition": "UNIQUE (code)"
+    },
+    {
+      "name": "math24_rooms_difficulty_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (difficulty = ANY (ARRAY['easy'::text, 'medium'::text, 'hard'::text, 'mixed'::text]))"
+    },
+    {
+      "name": "math24_rooms_duration_minutes_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (duration_minutes >= 1 AND duration_minutes <= 120)"
+    },
+    {
+      "name": "math24_rooms_mix_easy_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (mix_easy >= 0 AND mix_easy <= 20)"
+    },
+    {
+      "name": "math24_rooms_mix_hard_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (mix_hard >= 0 AND mix_hard <= 20)"
+    },
+    {
+      "name": "math24_rooms_mix_medium_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (mix_medium >= 0 AND mix_medium <= 20)"
+    },
+    {
+      "name": "math24_rooms_mode_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (mode = ANY (ARRAY['basic'::text, 'advanced'::text]))"
+    },
+    {
+      "name": "math24_rooms_name_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (char_length(btrim(name)) >= 1 AND char_length(btrim(name)) <= 60)"
+    },
+    {
+      "name": "math24_rooms_owner_id_fkey",
+      "table": "math24_rooms",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "math24_rooms_pkey",
+      "table": "math24_rooms",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "math24_rooms_question_count_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (question_count = ANY (ARRAY[5, 10, 15, 20]))"
+    },
+    {
+      "name": "math24_rooms_ranking_mode_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (ranking_mode = ANY (ARRAY['live'::text, 'final'::text]))"
+    },
+    {
+      "name": "math24_rooms_status_check",
+      "table": "math24_rooms",
+      "definition": "CHECK (status = ANY (ARRAY['waiting'::text, 'started'::text, 'finished'::text]))"
+    }
+  ],
+  "publications": null,
+  "event_triggers": [
+    {
+      "name": "ensure_rls",
+      "tags": [
+        "CREATE TABLE",
+        "CREATE TABLE AS",
+        "SELECT INTO"
+      ],
+      "event": "ddl_command_end",
+      "owner": "postgres",
+      "enabled": "O",
+      "function": "public.rls_auto_enable"
+    }
+  ],
+  "postgres_major": 17
+}
